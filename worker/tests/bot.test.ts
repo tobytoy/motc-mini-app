@@ -76,7 +76,8 @@ async function runTests() {
     { input: "/內部", expected: "show_projects" },
     { input: "/科資司", expected: "show_projects" },
     { input: "/internal", expected: "show_projects" },
-    { input: "/demo", expected: "show_projects" }
+    { input: "/demo", expected: "show_projects" },
+    { input: "/銀髮守護", expected: "show_projects" },
   ];
 
   for (const { input, expected } of tests) {
@@ -102,12 +103,12 @@ async function runTests() {
   assert.equal(allProjectsMsg.type, "flex");
   assert.ok(allProjectsMsg.altText.includes("16 大專案"));
   assert.ok(JSON.stringify(allProjectsMsg).includes("1d7b8b11-885e-4bcd-947e-a77325ac06f6"));
-  assert.ok(JSON.stringify(allProjectsMsg).includes("Demo 測試系統"));
+  assert.ok(JSON.stringify(allProjectsMsg).includes("銀髮守護"));
 
   const externalProjectsMsg = createExternalProjectsFlexMessage("https://form.test") as LineFlexMessage;
   assert.equal(externalProjectsMsg.type, "flex");
   assert.ok(externalProjectsMsg.altText.includes("8 大公開平台"));
-  assert.ok(JSON.stringify(externalProjectsMsg).includes("Demo 測試系統"));
+  assert.ok(JSON.stringify(externalProjectsMsg).includes("銀髮守護"));
 
   const whoMsg = createWhoAreYouFlexMessage({
     tdxUrl: MOCK_ENV.TDX_PORTAL_URL!,

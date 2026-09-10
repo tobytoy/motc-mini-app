@@ -108,8 +108,8 @@ export class NeedleClassifier {
 
     // 5. Unified Project Hub (內部與外部專案系統，依權限動態分流)
     if (
-      /^(project|專案|項目管理|專案管理|外部|內部|科資司|系統|平台|展示|資源|internal|links|web|demo)$/i.test(lower) ||
-      /(專案|項目管理|外部系統|內部專案|大數據平台|系統清單|內部系統|展示平台|demo|開發階段)/i.test(lower)
+      /^(project|專案|項目管理|專案管理|外部|內部|科資司|系統|平台|展示|資源|internal|links|web|demo|銀髮|銀髮守護)$/i.test(lower) ||
+      /(專案|項目管理|外部系統|內部專案|大數據平台|系統清單|內部系統|展示平台|demo|開發階段|銀髮守護|銀髮)/i.test(lower)
     ) {
       return {
         tool: "show_projects",

@@ -616,8 +616,8 @@ export function createAllInclusiveProjectsFlexMessage(
               type: "box",
               layout: "horizontal",
               contents: [
-                { type: "text", text: "8. 🧪 Demo 測試系統", size: "xs", color: "#7C3AED", flex: 6 },
-                { type: "text", text: "開發階段試用", size: "xxs", color: "#64748B", align: "end", flex: 4 }
+                { type: "text", text: "8. 🧓 銀髮守護", size: "xs", color: "#7C3AED", flex: 6 },
+                { type: "text", text: "高齡關懷試用", size: "xxs", color: "#64748B", align: "end", flex: 4 }
               ],
               action: { type: "uri", uri: demoAppUrl }
             }
@@ -758,7 +758,7 @@ export function createAllInclusiveProjectsFlexMessage(
           height: "sm",
           action: {
             type: "uri",
-            label: "🧪 Demo 測試系統 (AI Studio)",
+            label: "🧓 銀髮守護 (AI Studio)",
             uri: demoAppUrl
           }
         }
@@ -948,7 +948,7 @@ export function createExternalProjectsFlexMessage(formUrl: string): OutgoingLine
             },
             {
               type: "text",
-              text: "科資司 8 大內部專案（EVM、UML、UI catwalk、mcp、語音轉文字、壓測、資安、Demo 測試系統）僅對內部同仁開放。若您為內部同仁，請點選下方按鈕登記開通加入名冊！",
+              text: "科資司 8 大內部專案（EVM、UML、UI catwalk、mcp、語音轉文字、壓測、資安、銀髮守護）僅對內部同仁開放。若您為內部同仁，請點選下方按鈕登記開通加入名冊！",
               size: "xs",
               color: "#475569",
               wrap: true
