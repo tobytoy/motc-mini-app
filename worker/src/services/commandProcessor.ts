@@ -108,22 +108,28 @@ export async function processLineEvent(event: LineEvent, env: Env): Promise<void
           break;
         case "show_projects": {
           let isInternal = false;
-          const knownIds = (env.KNOWN_INTERNAL_USER_IDS || "").split(",").map((s) => s.trim());
+          const knownIds = (env.KNOWN_INTERNAL_USER_IDS || "").split(",").map((s) => s.trim()).filter(Boolean);
+          console.log(`[InternalAuth] Checking user ${userId}; whitelist has ${knownIds.length} users.`);
           if (userId && knownIds.includes(userId)) {
             isInternal = true;
+            console.log(`[InternalAuth] User ${userId} verified via KNOWN_INTERNAL_USER_IDS whitelist.`);
           } else if (userId && env.APPS_SCRIPT_AUTH_URL) {
             try {
+              console.log(`[InternalAuth] Querying Apps Script for ${userId}...`);
               const authResp = await fetch(`${env.APPS_SCRIPT_AUTH_URL}?userId=${encodeURIComponent(userId)}`, {
-                signal: AbortSignal.timeout(3000),
+                signal: AbortSignal.timeout(8000),
               });
               if (authResp.ok) {
                 const authData = (await authResp.json()) as { isInternal?: boolean; displayName?: string };
+                console.log(`[InternalAuth] Apps Script response for ${userId}:`, JSON.stringify(authData));
                 if (authData.isInternal) {
                   isInternal = true;
                   if (authData.displayName && !userDisplayName) {
                     userDisplayName = authData.displayName;
                   }
                 }
+              } else {
+                console.warn(`[InternalAuth] Apps Script returned HTTP ${authResp.status}`);
               }
             } catch (e) {
               console.warn("[InternalAuth] Failed to verify via Apps Script:", e);
