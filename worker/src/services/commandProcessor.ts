@@ -137,7 +137,7 @@ export async function processLineEvent(event: LineEvent, env: Env): Promise<void
           }
 
           if (isInternal) {
-            // 內部同仁：16 大系統全部顯示 (8 內部 + 8 外部)
+            // 內部同仁：23 大系統全部顯示 (15 內部 + 8 外部)
             await lineClient.reply(replyToken, createAllInclusiveProjectsFlexMessage(userDisplayName, demoAppUrl));
           } else {
             // 非內部人員：只會顯示 8 大外部公開專案，附內部開通申請

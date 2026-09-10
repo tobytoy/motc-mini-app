@@ -78,6 +78,9 @@ async function runTests() {
     { input: "/internal", expected: "show_projects" },
     { input: "/demo", expected: "show_projects" },
     { input: "/銀髮守護", expected: "show_projects" },
+    { input: "/yolo", expected: "show_projects" },
+    { input: "/seo", expected: "show_projects" },
+    { input: "/命理", expected: "show_projects" }
   ];
 
   for (const { input, expected } of tests) {
@@ -101,9 +104,16 @@ async function runTests() {
 
   const allProjectsMsg = createAllInclusiveProjectsFlexMessage("王季豪") as LineFlexMessage;
   assert.equal(allProjectsMsg.type, "flex");
-  assert.ok(allProjectsMsg.altText.includes("16 大專案"));
+  assert.ok(allProjectsMsg.altText.includes("23 大系統"));
   assert.ok(JSON.stringify(allProjectsMsg).includes("1d7b8b11-885e-4bcd-947e-a77325ac06f6"));
   assert.ok(JSON.stringify(allProjectsMsg).includes("銀髮守護"));
+  assert.ok(JSON.stringify(allProjectsMsg).includes("Yolo26"));
+  assert.ok(JSON.stringify(allProjectsMsg).includes("OpenData"));
+  assert.ok(JSON.stringify(allProjectsMsg).includes("SEO"));
+  assert.ok(JSON.stringify(allProjectsMsg).includes("全球市場"));
+  assert.ok(JSON.stringify(allProjectsMsg).includes("項目監測"));
+  assert.ok(JSON.stringify(allProjectsMsg).includes("命理工作室"));
+  assert.ok(JSON.stringify(allProjectsMsg).includes("期限內分享"));
 
   const externalProjectsMsg = createExternalProjectsFlexMessage("https://form.test") as LineFlexMessage;
   assert.equal(externalProjectsMsg.type, "flex");

@@ -474,7 +474,7 @@ export function createMiniAppFlexMessage(
  * 3. 項目管理網頁可愛氣泡 Flex Message
  */
 /**
- * 3A. 內部人員專案總覽 (/project - 內部人員全部 16 大專案均顯示)
+ * 3A. 內部人員專案總覽 (/project - 內部人員全部 23 大系統均顯示)
  */
 export function createAllInclusiveProjectsFlexMessage(
   displayName?: string,
@@ -506,7 +506,7 @@ export function createAllInclusiveProjectsFlexMessage(
         },
         {
           type: "text",
-          text: "內部同仁已解鎖全部 16 大專案系統 (8 內部 + 8 外部)",
+          text: "內部同仁已解鎖全部 23 大系統平台 (15 內部 ＋ 8 外部)",
           color: "#DDD6FE",
           size: "xs",
           margin: "xs"
@@ -528,7 +528,7 @@ export function createAllInclusiveProjectsFlexMessage(
         },
         {
           type: "text",
-          text: "以下為科資司全部專案（8 大內部系統 ＋ 8 大外部公開大數據平台），建議使用電腦/寬螢幕瀏覽以獲得最佳體驗：",
+          text: "以下為科資司全部專案（15 大內部研發工具 ＋ 8 大外部公開大數據平台），建議使用電腦/寬螢幕瀏覽以獲得最佳體驗：",
           size: "xs",
           color: "#475569",
           wrap: true
@@ -538,11 +538,19 @@ export function createAllInclusiveProjectsFlexMessage(
           color: "#E2E8F0"
         },
         {
-          type: "text",
-          text: "🔒 科資司 8 大內部專案系統：",
+          text: "🔒 科資司 15 大內部研發與專案工具：",
           weight: "bold",
           size: "xs",
           color: "#6D28D9"
+        },
+        // 一、系統工程與專案管理 (4項)
+        {
+          type: "text",
+          text: "🏗️ 系統工程與專案管理",
+          weight: "bold",
+          size: "xxs",
+          color: "#7C3AED",
+          margin: "sm"
         },
         {
           type: "box",
@@ -553,7 +561,7 @@ export function createAllInclusiveProjectsFlexMessage(
               type: "box",
               layout: "horizontal",
               contents: [
-                { type: "text", text: "1. 📊 EVM 專案管理", size: "xs", color: "#7C3AED", flex: 6 },
+                { type: "text", text: "1. 📊 EVM 專案管理", size: "xs", color: "#6D28D9", flex: 6 },
                 { type: "text", text: "實值管理系統", size: "xxs", color: "#64748B", align: "end", flex: 4 }
               ],
               action: { type: "uri", uri: "https://ai.studio/apps/0bd118d7-407b-4576-bf5b-e354f697c2cf?fullscreenApplet=true" }
@@ -562,7 +570,7 @@ export function createAllInclusiveProjectsFlexMessage(
               type: "box",
               layout: "horizontal",
               contents: [
-                { type: "text", text: "2. 📐 UML 超級系統", size: "xs", color: "#7C3AED", flex: 6 },
+                { type: "text", text: "2. 📐 UML 超級系統", size: "xs", color: "#6D28D9", flex: 6 },
                 { type: "text", text: "架構工程系統", size: "xxs", color: "#64748B", align: "end", flex: 4 }
               ],
               action: { type: "uri", uri: "https://ai.studio/apps/ff844b1e-b6fc-48d7-980e-43f09a695bb5?fullscreenApplet=true" }
@@ -571,7 +579,7 @@ export function createAllInclusiveProjectsFlexMessage(
               type: "box",
               layout: "horizontal",
               contents: [
-                { type: "text", text: "3. 🎨 UI catwalk", size: "xs", color: "#7C3AED", flex: 6 },
+                { type: "text", text: "3. 🎨 UI catwalk", size: "xs", color: "#6D28D9", flex: 6 },
                 { type: "text", text: "前端走秀展示", size: "xxs", color: "#64748B", align: "end", flex: 4 }
               ],
               action: { type: "uri", uri: "https://motc-ui-catwalk.web.app/" }
@@ -580,17 +588,42 @@ export function createAllInclusiveProjectsFlexMessage(
               type: "box",
               layout: "horizontal",
               contents: [
-                { type: "text", text: "4. 🔌 mcp 資訊", size: "xs", color: "#7C3AED", flex: 6 },
-                { type: "text", text: "cf-mcp-playground", size: "xxs", color: "#64748B", align: "end", flex: 4 }
+                { type: "text", text: "4. 📡 項目監測站", size: "xs", color: "#6D28D9", flex: 6 },
+                { type: "text", text: "開源專案雷達", size: "xxs", color: "#64748B", align: "end", flex: 4 }
               ],
-              action: { type: "uri", uri: "https://github.com/tobytoy/cf-mcp-playground" }
+              action: { type: "uri", uri: "https://ossradar-4kcro5oa.manus.space" }
+            }
+          ]
+        },
+        // 二、AI 智慧與模型研發 (4項)
+        {
+          type: "text",
+          text: "🤖 AI 智慧與模型研發",
+          weight: "bold",
+          size: "xxs",
+          color: "#4F46E5",
+          margin: "sm"
+        },
+        {
+          type: "box",
+          layout: "vertical",
+          spacing: "xs",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "5. 👁️ 訓練測試 Yolo26", size: "xs", color: "#4F46E5", flex: 6 },
+                { type: "text", text: "視覺模型 Hub", size: "xxs", color: "#64748B", align: "end", flex: 4 }
+              ],
+              action: { type: "uri", uri: "https://yolo26hub-97sxcr5h.manus.space" }
             },
             {
               type: "box",
               layout: "horizontal",
               contents: [
-                { type: "text", text: "5. 🎙️ 語音轉文字", size: "xs", color: "#7C3AED", flex: 6 },
-                { type: "text", text: "voice2text-studio", size: "xxs", color: "#64748B", align: "end", flex: 4 }
+                { type: "text", text: "6. 🎙️ 語音轉文字", size: "xs", color: "#4F46E5", flex: 6 },
+                { type: "text", text: "voice2text 辨識", size: "xxs", color: "#64748B", align: "end", flex: 4 }
               ],
               action: { type: "uri", uri: "https://github.com/tobytoy/voice2text-studio" }
             },
@@ -598,7 +631,50 @@ export function createAllInclusiveProjectsFlexMessage(
               type: "box",
               layout: "horizontal",
               contents: [
-                { type: "text", text: "6. ⚡ motc 壓力測試", size: "xs", color: "#7C3AED", flex: 6 },
+                { type: "text", text: "7. 🧓 銀髮守護", size: "xs", color: "#4F46E5", flex: 6 },
+                { type: "text", text: "高齡關懷測試", size: "xxs", color: "#64748B", align: "end", flex: 4 }
+              ],
+              action: { type: "uri", uri: demoAppUrl }
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "8. 🔮 命理工作室", size: "xs", color: "#4F46E5", flex: 6 },
+                { type: "text", text: "多維數理推算", size: "xxs", color: "#64748B", align: "end", flex: 4 }
+              ],
+              action: { type: "uri", uri: "https://multidivine-jmhmllyb.manus.space" }
+            }
+          ]
+        },
+        // 三、雲端基座與資安效能 (3項)
+        {
+          type: "text",
+          text: "🛡️ 雲端基座與資安效能",
+          weight: "bold",
+          size: "xxs",
+          color: "#0D9488",
+          margin: "sm"
+        },
+        {
+          type: "box",
+          layout: "vertical",
+          spacing: "xs",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "9. 🔌 MCP 資訊基座", size: "xs", color: "#0D9488", flex: 6 },
+                { type: "text", text: "cf-mcp 協定", size: "xxs", color: "#64748B", align: "end", flex: 4 }
+              ],
+              action: { type: "uri", uri: "https://github.com/tobytoy/cf-mcp-playground" }
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "10. ⚡ MOTC 壓力測試", size: "xs", color: "#0D9488", flex: 6 },
                 { type: "text", text: "負載效能檢驗", size: "xxs", color: "#64748B", align: "end", flex: 4 }
               ],
               action: { type: "uri", uri: "https://github.com/tobytoy/motc-load-testing" }
@@ -607,19 +683,62 @@ export function createAllInclusiveProjectsFlexMessage(
               type: "box",
               layout: "horizontal",
               contents: [
-                { type: "text", text: "7. 🛡️ 資安檢測工具", size: "xs", color: "#7C3AED", flex: 6 },
+                { type: "text", text: "11. 🛡️ 資安檢測工具", size: "xs", color: "#0D9488", flex: 6 },
                 { type: "text", text: "紅隊演練檢測", size: "xxs", color: "#64748B", align: "end", flex: 4 }
               ],
               action: { type: "uri", uri: "https://github.com/tobytoy/red-team-tools" }
+            }
+          ]
+        },
+        // 四、數據工程與商業情報 (4項)
+        {
+          type: "text",
+          text: "📊 數據工程與商業情報",
+          weight: "bold",
+          size: "xxs",
+          color: "#0284C7",
+          margin: "sm"
+        },
+        {
+          type: "box",
+          layout: "vertical",
+          spacing: "xs",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "12. 📑 OpenData 語料轉換", size: "xs", color: "#0284C7", flex: 6 },
+                { type: "text", text: "PDF API 萃取", size: "xxs", color: "#64748B", align: "end", flex: 4 }
+              ],
+              action: { type: "uri", uri: "https://taic-pdf-api-44da8rni.manus.space" }
             },
             {
               type: "box",
               layout: "horizontal",
               contents: [
-                { type: "text", text: "8. 🧓 銀髮守護", size: "xs", color: "#7C3AED", flex: 6 },
-                { type: "text", text: "高齡關懷試用", size: "xxs", color: "#64748B", align: "end", flex: 4 }
+                { type: "text", text: "13. 📈 全球市場分析", size: "xs", color: "#0284C7", flex: 6 },
+                { type: "text", text: "MarketPulse 趨勢", size: "xxs", color: "#64748B", align: "end", flex: 4 }
               ],
-              action: { type: "uri", uri: demoAppUrl }
+              action: { type: "uri", uri: "https://marketpulse-ugkkupnk.manus.space/" }
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "14. 🔍 SEO 行銷分析", size: "xs", color: "#0284C7", flex: 6 },
+                { type: "text", text: "搜尋優化分析", size: "xxs", color: "#64748B", align: "end", flex: 4 }
+              ],
+              action: { type: "uri", uri: "https://searchanalyz-vj5fhzdc.manus.space" }
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "15. ⏱️ 期限內分享訊息", size: "xs", color: "#0284C7", flex: 6 },
+                { type: "text", text: "安全暫態筆記", size: "xxs", color: "#64748B", align: "end", flex: 4 }
+              ],
+              action: { type: "uri", uri: "https://sharenote-fzfdkymv.manus.space" }
             }
           ]
         },
@@ -768,7 +887,7 @@ export function createAllInclusiveProjectsFlexMessage(
 
   return {
     type: "flex",
-    altText: "🔒 MOTC 專案系統總覽 (內部人員已解鎖 16 大專案)",
+    altText: "🔒 MOTC 專案系統總覽 (內部人員已解鎖 23 大系統)",
     contents,
     quickReply: BOT_QUICK_REPLY
   };
@@ -948,7 +1067,7 @@ export function createExternalProjectsFlexMessage(formUrl: string): OutgoingLine
             },
             {
               type: "text",
-              text: "科資司 8 大內部專案（EVM、UML、UI catwalk、mcp、語音轉文字、壓測、資安、銀髮守護）僅對內部同仁開放。若您為內部同仁，請點選下方按鈕登記開通加入名冊！",
+              text: "科資司 15 大內部專案工具（含 EVM、UML、UI catwalk、Yolo26、語音轉文字、銀髮守護、OpenData語料、市場情報等）僅對內部同仁開放。若您為內部同仁，請點選下方按鈕登記開通加入名冊！",
               size: "xs",
               color: "#475569",
               wrap: true
