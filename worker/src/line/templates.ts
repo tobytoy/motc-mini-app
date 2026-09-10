@@ -538,6 +538,7 @@ export function createAllInclusiveProjectsFlexMessage(
           color: "#E2E8F0"
         },
         {
+          type: "text",
           text: "🔒 科資司 15 大內部研發與專案工具：",
           weight: "bold",
           size: "xs",

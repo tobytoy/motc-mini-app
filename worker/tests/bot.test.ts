@@ -115,11 +115,27 @@ async function runTests() {
   assert.ok(JSON.stringify(allProjectsMsg).includes("命理工作室"));
   assert.ok(JSON.stringify(allProjectsMsg).includes("期限內分享"));
 
+  function assertValidFlex(obj: unknown, path = "root"): void {
+    if (!obj || typeof obj !== "object") return;
+    if (Array.isArray(obj)) {
+      obj.forEach((item, i) => assertValidFlex(item, `${path}[${i}]`));
+      return;
+    }
+    const record = obj as Record<string, unknown>;
+    if (record.text !== undefined) {
+      assert.ok(record.type, `Component at ${path} has text "${String(record.text)}" but missing type!`);
+    }
+    for (const key of Object.keys(record)) {
+      assertValidFlex(record[key], `${path}.${key}`);
+    }
+  }
+  assertValidFlex(allProjectsMsg);
+
   const externalProjectsMsg = createExternalProjectsFlexMessage("https://form.test") as LineFlexMessage;
   assert.equal(externalProjectsMsg.type, "flex");
   assert.ok(externalProjectsMsg.altText.includes("8 大公開平台"));
   assert.ok(JSON.stringify(externalProjectsMsg).includes("銀髮守護"));
-
+  assertValidFlex(externalProjectsMsg);
   const whoMsg = createWhoAreYouFlexMessage({
     tdxUrl: MOCK_ENV.TDX_PORTAL_URL!,
     miniAppUrl: MOCK_ENV.MINI_APP_URL!,
