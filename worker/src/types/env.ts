@@ -9,6 +9,7 @@ export interface Env {
   TDX_PORTAL_URL?: string;
   MINI_APP_URL?: string;
   PROJECT_MGMT_URL?: string;
+  DEMO_APP_URL?: string;
   GOOGLE_FORM_URL?: string;
   FEEDBACK_FORM_URL?: string;
   DETECTIVE_LIFF_URL?: string;

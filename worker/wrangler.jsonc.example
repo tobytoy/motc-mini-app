@@ -16,6 +16,7 @@
     "TDX_PORTAL_URL": "https://tdx.transportdata.tw/",
     "MINI_APP_URL": "https://motc-mini-dog.pages.dev/",
     "PROJECT_MGMT_URL": "https://ai.studio/apps/your-app-id",
+    "DEMO_APP_URL": "https://ai.studio/apps/your-demo-app-id",
     "GOOGLE_FORM_URL": "https://docs.google.com/forms/d/e/your-form-id/viewform",
     "FEEDBACK_FORM_URL": "https://docs.google.com/forms/d/e/your-feedback-form-id/viewform",
     "DETECTIVE_LIFF_URL": "https://miniapp.line.me/your-liff-id",

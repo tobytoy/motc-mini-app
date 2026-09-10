@@ -474,9 +474,12 @@ export function createMiniAppFlexMessage(
  * 3. 項目管理網頁可愛氣泡 Flex Message
  */
 /**
- * 3A. 內部人員專案總覽 (/project - 內部人員全部 15 大專案均顯示)
+ * 3A. 內部人員專案總覽 (/project - 內部人員全部 16 大專案均顯示)
  */
-export function createAllInclusiveProjectsFlexMessage(displayName?: string): OutgoingLineMessage {
+export function createAllInclusiveProjectsFlexMessage(
+  displayName?: string,
+  demoAppUrl: string = "https://ai.studio/apps/1d7b8b11-885e-4bcd-947e-a77325ac06f6?fullscreenApplet=true"
+): OutgoingLineMessage {
   const contents = {
     type: "bubble",
     size: "mega",
@@ -503,7 +506,7 @@ export function createAllInclusiveProjectsFlexMessage(displayName?: string): Out
         },
         {
           type: "text",
-          text: "內部同仁已解鎖全部 15 大專案系統 (7 內部 + 8 外部)",
+          text: "內部同仁已解鎖全部 16 大專案系統 (8 內部 + 8 外部)",
           color: "#DDD6FE",
           size: "xs",
           margin: "xs"
@@ -525,7 +528,7 @@ export function createAllInclusiveProjectsFlexMessage(displayName?: string): Out
         },
         {
           type: "text",
-          text: "以下為科資司全部專案（7 大內部系統 ＋ 8 大外部公開大數據平台），建議使用電腦/寬螢幕瀏覽以獲得最佳體驗：",
+          text: "以下為科資司全部專案（8 大內部系統 ＋ 8 大外部公開大數據平台），建議使用電腦/寬螢幕瀏覽以獲得最佳體驗：",
           size: "xs",
           color: "#475569",
           wrap: true
@@ -536,7 +539,7 @@ export function createAllInclusiveProjectsFlexMessage(displayName?: string): Out
         },
         {
           type: "text",
-          text: "🔒 科資司 7 大內部專案系統：",
+          text: "🔒 科資司 8 大內部專案系統：",
           weight: "bold",
           size: "xs",
           color: "#6D28D9"
@@ -608,6 +611,15 @@ export function createAllInclusiveProjectsFlexMessage(displayName?: string): Out
                 { type: "text", text: "紅隊演練檢測", size: "xxs", color: "#64748B", align: "end", flex: 4 }
               ],
               action: { type: "uri", uri: "https://github.com/tobytoy/red-team-tools" }
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "8. 🧪 Demo 測試系統", size: "xs", color: "#7C3AED", flex: 6 },
+                { type: "text", text: "開發階段試用", size: "xxs", color: "#64748B", align: "end", flex: 4 }
+              ],
+              action: { type: "uri", uri: demoAppUrl }
             }
           ]
         },
@@ -739,6 +751,16 @@ export function createAllInclusiveProjectsFlexMessage(displayName?: string): Out
             label: "🚄 票證大數據分析平台",
             uri: "https://tobytoy.github.io/taiwan-mobility-pulse/"
           }
+        },
+        {
+          type: "button",
+          style: "secondary",
+          height: "sm",
+          action: {
+            type: "uri",
+            label: "🧪 Demo 測試系統 (AI Studio)",
+            uri: demoAppUrl
+          }
         }
       ]
     }
@@ -746,7 +768,7 @@ export function createAllInclusiveProjectsFlexMessage(displayName?: string): Out
 
   return {
     type: "flex",
-    altText: "🔒 MOTC 專案系統總覽 (內部人員已解鎖 15 大專案)",
+    altText: "🔒 MOTC 專案系統總覽 (內部人員已解鎖 16 大專案)",
     contents,
     quickReply: BOT_QUICK_REPLY
   };
@@ -926,7 +948,7 @@ export function createExternalProjectsFlexMessage(formUrl: string): OutgoingLine
             },
             {
               type: "text",
-              text: "科資司 7 大內部專案（EVM、UML、UI catwalk、mcp、語音轉文字、壓測、資安）僅對內部同仁開放。若您為內部同仁，請點選下方按鈕登記開通加入名冊！",
+              text: "科資司 8 大內部專案（EVM、UML、UI catwalk、mcp、語音轉文字、壓測、資安、Demo 測試系統）僅對內部同仁開放。若您為內部同仁，請點選下方按鈕登記開通加入名冊！",
               size: "xs",
               color: "#475569",
               wrap: true

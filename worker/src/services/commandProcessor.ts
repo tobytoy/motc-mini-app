@@ -28,6 +28,7 @@ export async function processLineEvent(event: LineEvent, env: Env): Promise<void
   const tdxUrl = env.TDX_PORTAL_URL || "https://tdx.transportdata.tw/";
   const miniAppUrl = env.MINI_APP_URL || "https://motc-mini-dog.pages.dev/";
   const projectUrl = env.PROJECT_MGMT_URL || "https://ai.studio/apps/0bd118d7-407b-4576-bf5b-e354f697c2cf";
+  const demoAppUrl = env.DEMO_APP_URL || "https://ai.studio/apps/1d7b8b11-885e-4bcd-947e-a77325ac06f6?fullscreenApplet=true";
   const detectiveLiffUrl = env.DETECTIVE_LIFF_URL || "https://miniapp.line.me/2011521041-JnfPdXhF";
   const detectiveWebUrl = env.DETECTIVE_WEB_URL || "https://motc-mini-dog.pages.dev/search";
 
@@ -130,8 +131,8 @@ export async function processLineEvent(event: LineEvent, env: Env): Promise<void
           }
 
           if (isInternal) {
-            // 內部同仁：15 大系統全部顯示 (7 內部 + 8 外部)
-            await lineClient.reply(replyToken, createAllInclusiveProjectsFlexMessage(userDisplayName));
+            // 內部同仁：16 大系統全部顯示 (8 內部 + 8 外部)
+            await lineClient.reply(replyToken, createAllInclusiveProjectsFlexMessage(userDisplayName, demoAppUrl));
           } else {
             // 非內部人員：只會顯示 8 大外部公開專案，附內部開通申請
             await lineClient.reply(replyToken, createExternalProjectsFlexMessage(formUrl));

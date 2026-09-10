@@ -35,7 +35,7 @@ export const BOT_TOOLS: ToolDefinition[] = [
   },
   {
     name: "show_projects",
-    description: "查看 MOTC 專案展示與系統總覽 (/project)。依據使用者內部權限動態分流：外部訪客顯示 8 大公開交通大數據平台；內部同仁同時解鎖 7 大內部專案與 8 大公開平台",
+    description: "查看 MOTC 專案展示與系統總覽 (/project)。依據使用者內部權限動態分流：外部訪客顯示 8 大公開交通大數據平台；內部同仁同時解鎖 8 大內部專案與 8 大公開平台",
     parameters: {
       type: "object",
       properties: {}
