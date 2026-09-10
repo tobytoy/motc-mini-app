@@ -39,7 +39,12 @@ export interface NearbyResponse {
     lon: number;
     distanceMeters: number;
     availableBikes: number;
+    generalBikes: number;
+    electricBikes: number;
     emptySpaces: number;
+    suspendedSpaces: number;
+    isSuspended: boolean;
+    statusText: string;
     totalCapacity: number;
     updateTime?: string;
   }>;
@@ -52,8 +57,14 @@ export interface NearbyResponse {
     distanceMeters: number;
     availableSpaces: number;
     totalSpaces: number;
-    hourlyRate: string;
+    hourlyRate: string | null;
     description: string;
+    hasCharging: boolean;
+    chargingSpaces: number;
+    chargingInfo: string;
+    isFull: boolean;
+    isClosed: boolean;
+    statusText: string;
   }>;
   busStops: Array<{
     id: string;
@@ -181,7 +192,12 @@ async function fetchFromTransportMcp(
         lon: b.longitude ?? lon,
         distanceMeters: b.distanceMeters ?? calculateDistanceMeters(lat, lon, b.latitude ?? lat, b.longitude ?? lon),
         availableBikes: b.availableBikes ?? 0,
+        generalBikes: b.availableBikes ?? 0,
+        electricBikes: 0,
         emptySpaces: b.emptySpaces ?? 0,
+        suspendedSpaces: 0,
+        isSuspended: false,
+        statusText: "正常營運",
         totalCapacity: b.totalSpaces ?? 0,
       })),
       parkingLots: nt.parking?.map((p) => ({
@@ -193,8 +209,14 @@ async function fetchFromTransportMcp(
         distanceMeters: p.distanceMeters ?? calculateDistanceMeters(lat, lon, p.latitude ?? lat, p.longitude ?? lon),
         availableSpaces: p.availableSpaces ?? 0,
         totalSpaces: p.totalSpaces ?? 0,
-        hourlyRate: p.hourlyRate || "依現場公告",
+        hourlyRate: p.hourlyRate || null,
         description: p.address || "路外停車場",
+        hasCharging: false,
+        chargingSpaces: 0,
+        chargingInfo: "",
+        isFull: (p.availableSpaces ?? 0) === 0 && (p.totalSpaces ?? 0) > 0,
+        isClosed: false,
+        statusText: (p.availableSpaces ?? 0) === 0 ? "目前滿位" : "正常營業",
       })),
       busStops: nt.bus?.map((s) => ({
         id: s.id || s.name,
@@ -304,7 +326,7 @@ async function fetchYouBike(
   radius: number
 ) {
   try {
-    const stationUrl = `https://tdx.transportdata.tw/api/basic/v2/Bike/Station/City/${city}?$spatialFilter=nearby(${lat},${lon},${radius})&$top=10&$format=JSON`;
+    const stationUrl = `https://tdx.transportdata.tw/api/basic/v2/Bike/Station/City/${city}?$spatialFilter=nearby(${lat},${lon},${radius})&$top=25&$format=JSON`;
     const stationResp = await fetch(stationUrl, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -333,7 +355,17 @@ async function fetchYouBike(
     const filterParts = uids.map((id) => `StationUID eq %27${encodeURIComponent(id)}%27`).join(" or ");
     const availUrl = `https://tdx.transportdata.tw/api/basic/v2/Bike/Availability/City/${city}?$filter=${filterParts}&$format=JSON`;
 
-    let availMap = new Map<string, { rent: number; returnSpace: number; updateTime?: string }>();
+    let availMap = new Map<
+      string,
+      {
+        rent: number;
+        generalBikes: number;
+        electricBikes: number;
+        returnSpace: number;
+        serviceStatus: number;
+        updateTime?: string;
+      }
+    >();
     try {
       const availResp = await fetch(availUrl, {
         headers: { Authorization: `Bearer ${token}` },
@@ -343,12 +375,24 @@ async function fetchYouBike(
           StationUID: string;
           AvailableRentBikes?: number;
           AvailableReturnBikes?: number;
+          AvailableRentBikesDetail?: {
+            GeneralBikes?: number;
+            ElectricBikes?: number;
+          };
+          ServiceStatus?: number;
           UpdateTime?: string;
         }>;
         for (const item of availList) {
+          const rentTotal = item.AvailableRentBikes ?? 0;
+          const genBikes = item.AvailableRentBikesDetail?.GeneralBikes ?? rentTotal;
+          const eleBikes = item.AvailableRentBikesDetail?.ElectricBikes ?? 0;
+
           availMap.set(item.StationUID, {
-            rent: item.AvailableRentBikes ?? 0,
+            rent: rentTotal,
+            generalBikes: genBikes,
+            electricBikes: eleBikes,
             returnSpace: item.AvailableReturnBikes ?? 0,
+            serviceStatus: item.ServiceStatus ?? 1,
             updateTime: item.UpdateTime,
           });
         }
@@ -357,32 +401,124 @@ async function fetchYouBike(
       console.warn("[TDX] Bike availability fetch error:", e);
     }
 
-    const results = stations.map((s) => {
-      const sLat = s.StationPosition?.PositionLat ?? lat;
-      const sLon = s.StationPosition?.PositionLon ?? lon;
-      const dist = calculateDistanceMeters(lat, lon, sLat, sLon);
-      const avail = availMap.get(s.StationUID);
+    const results = stations
+      .map((s) => {
+        const sLat = s.StationPosition?.PositionLat ?? lat;
+        const sLon = s.StationPosition?.PositionLon ?? lon;
+        const dist = calculateDistanceMeters(lat, lon, sLat, sLon);
+        const avail = availMap.get(s.StationUID);
+        const rent = avail?.rent ?? 0;
+        const returnSpace = avail?.returnSpace ?? 0;
+        const total = s.BikesCapacity ?? 0;
+        const suspended = Math.max(0, total - (rent + returnSpace));
+        const isSuspended =
+          avail?.serviceStatus === 0 ||
+          avail?.serviceStatus === 2 ||
+          (rent === 0 && returnSpace === 0 && total > 0);
+        const statusText = isSuspended ? "暫停營運" : "正常營運";
 
-      return {
-        id: s.StationUID,
-        name: (s.StationName?.Zh_tw ?? "YouBike 站點").replace(/^YouBike2\.0_/, ""),
-        address: s.StationAddress?.Zh_tw ?? "",
-        lat: sLat,
-        lon: sLon,
-        distanceMeters: dist,
-        availableBikes: avail?.rent ?? 0,
-        emptySpaces: avail?.returnSpace ?? 0,
-        totalCapacity: s.BikesCapacity ?? 0,
-        updateTime: avail?.updateTime || s.UpdateTime,
-      };
-    });
+        return {
+          id: s.StationUID,
+          name: (s.StationName?.Zh_tw ?? "YouBike 站點").replace(/^YouBike2\.0_/, ""),
+          address: s.StationAddress?.Zh_tw ?? "",
+          lat: sLat,
+          lon: sLon,
+          distanceMeters: dist,
+          availableBikes: rent,
+          generalBikes: avail?.generalBikes ?? rent,
+          electricBikes: avail?.electricBikes ?? 0,
+          emptySpaces: returnSpace,
+          suspendedSpaces: suspended,
+          isSuspended,
+          statusText,
+          totalCapacity: total,
+          updateTime: avail?.updateTime || s.UpdateTime,
+        };
+      })
+      .filter((b) => b.distanceMeters <= 1200); // 太遠就放棄 (1200m)
 
     results.sort((a, b) => a.distanceMeters - b.distanceMeters);
-    return results.slice(0, 6);
+    return results.slice(0, 10);
   } catch (err) {
     console.error("[TDX] fetchYouBike error:", err);
     return [];
   }
+}
+
+function extractChargingInfo(desc: string = ""): {
+  hasCharging: boolean;
+  chargingSpaces: number;
+  chargingInfo: string;
+} {
+  // 1. Matches "電動車充電位13格", "電動車專用車位4格", "充電樁4支", "充電車位2格", "13格充電位"
+  const countMatch =
+    desc.match(/(?:電動車(?:充電位|專用車位|車位)|充電(?:專用)?車位|充電樁)[^\d]*(\d+)\s*(?:格|支|位)/i) ||
+    desc.match(/(\d+)\s*(?:格|支|位)[^\d]*(?:充電|電動車)/i);
+
+  if (countMatch && countMatch[1]) {
+    const count = parseInt(countMatch[1], 10);
+    return {
+      hasCharging: true,
+      chargingSpaces: count,
+      chargingInfo: `⚡ ${count}格充電位`,
+    };
+  }
+
+  // 2. Matches general charging keywords
+  if (/(?:電動車(?:充電|專用)|充電(?:樁|站|設施|車位))/i.test(desc)) {
+    return {
+      hasCharging: true,
+      chargingSpaces: 0,
+      chargingInfo: "⚡ 設有充電設施",
+    };
+  }
+
+  return {
+    hasCharging: false,
+    chargingSpaces: 0,
+    chargingInfo: "",
+  };
+}
+
+function extractParkingRate(name: string, desc: string = "", fareDesc: string = ""): string | null {
+  const fullText = `${fareDesc} ${desc}`;
+
+  // 1. Explicit hourly rate matches
+  const matchHourly =
+    fullText.match(/(?:每小時|計時|每\s*hr)[^\d]*(\d+)\s*元/i) ||
+    fullText.match(/(\d+)\s*元\s*\/\s*(?:小時|時|hr)/i) ||
+    fullText.match(/(\d+)\s*元\s*\(每小時\)/i);
+  if (matchHourly && matchHourly[1]) {
+    return `${matchHourly[1]} 元/時`;
+  }
+
+  // 2. Flat rate / 計次
+  const matchFlat = fullText.match(/計次[^\d]*(\d+)\s*元/i) || fullText.match(/每次[^\d]*(\d+)\s*元/i);
+  if (matchFlat && matchFlat[1]) {
+    return `${matchFlat[1]} 元/次`;
+  }
+
+  // 3. Facility-type reference rates (參考價格)
+  if (/(京站|地下街|微風|新光|遠東|時代|百貨|高鐵|轉運站)/.test(name)) {
+    return "約 50~80 元/時";
+  }
+  if (/(國中|國小|公有|市府|區公所|公園地下|活動中心)/.test(name)) {
+    return "約 30~40 元/時";
+  }
+  if (/(times|台灣聯通|嘟嘟房|便利停車|俥亭|長揚|驛東)/i.test(name)) {
+    return "約 40~60 元/時";
+  }
+  if (/(醫院|醫療|院區)/.test(name)) {
+    return "約 30~50 元/時";
+  }
+  if (/(廣場|大樓|大廈)/.test(name)) {
+    return "約 50~70 元/時";
+  }
+  if (/(平面|臨時)/.test(name)) {
+    return "約 30~50 元/時";
+  }
+
+  return null;
 }
 
 async function fetchParking(
@@ -393,7 +529,7 @@ async function fetchParking(
   radius: number
 ) {
   try {
-    const carparkUrl = `https://tdx.transportdata.tw/api/basic/v1/Parking/OffStreet/CarPark/City/${city}?$spatialFilter=nearby(${lat},${lon},${radius})&$top=10&$format=JSON`;
+    const carparkUrl = `https://tdx.transportdata.tw/api/basic/v1/Parking/OffStreet/CarPark/City/${city}?$spatialFilter=nearby(${lat},${lon},${radius})&$top=25&$format=JSON`;
     const carparkResp = await fetch(carparkUrl, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -408,6 +544,7 @@ async function fetchParking(
         CarParkID: string;
         CarParkName?: { Zh_tw?: string };
         Description?: string;
+        FareDescription?: string;
         Address?: string;
         CarParkPosition?: { PositionLat?: number; PositionLon?: number };
         TotalSpaces?: number;
@@ -448,38 +585,45 @@ async function fetchParking(
       console.warn("[TDX] Parking availability fetch error:", e);
     }
 
-    const results = carParks.map((p) => {
-      const pLat = p.CarParkPosition?.PositionLat ?? lat;
-      const pLon = p.CarParkPosition?.PositionLon ?? lon;
-      const dist = calculateDistanceMeters(lat, lon, pLat, pLon);
-      const avail = availMap.get(p.CarParkID);
+    const results = carParks
+      .map((p) => {
+        const pLat = p.CarParkPosition?.PositionLat ?? lat;
+        const pLon = p.CarParkPosition?.PositionLon ?? lon;
+        const dist = calculateDistanceMeters(lat, lon, pLat, pLon);
+        const avail = availMap.get(p.CarParkID);
 
-      // Extract hourly rate estimate from description if possible
-      let hourlyRate = "依現場公告";
-      const desc = p.Description || "";
-      const match = desc.match(/(\d+)\s*元\s*\/\s*(?:時|小時)/);
-      if (match) {
-        hourlyRate = `${match[1]} 元/時`;
-      } else if (desc.includes("計時")) {
-        hourlyRate = "計時收費";
-      }
+        const desc = p.Description || "";
+        const hourlyRate = extractParkingRate(p.CarParkName?.Zh_tw || "", desc, p.FareDescription || "");
+        const charging = extractChargingInfo(desc);
+        const totalCount = avail?.total || p.TotalSpaces || 0;
+        const availCount = avail ? avail.avail : (p.TotalSpaces ? Math.max(0, Math.floor(p.TotalSpaces * 0.3)) : 0);
+        const isClosed = desc.includes("暫停營業") || desc.includes("暫不開放") || desc.includes("整修");
+        const isFull = !isClosed && totalCount > 0 && availCount === 0;
+        const statusText = isClosed ? "暫停營業" : (isFull ? "目前滿位" : "正常營業");
 
-      return {
-        id: p.CarParkID,
-        name: p.CarParkName?.Zh_tw ?? "路外停車場",
-        address: p.Address ?? "",
-        lat: pLat,
-        lon: pLon,
-        distanceMeters: dist,
-        availableSpaces: avail ? avail.avail : (p.TotalSpaces ? Math.max(0, Math.floor(p.TotalSpaces * 0.3)) : 0),
-        totalSpaces: avail?.total || p.TotalSpaces || 0,
-        hourlyRate,
-        description: p.Description || "公有/民營路外停車場",
-      };
-    });
+        return {
+          id: p.CarParkID,
+          name: p.CarParkName?.Zh_tw ?? "路外停車場",
+          address: p.Address ?? "",
+          lat: pLat,
+          lon: pLon,
+          distanceMeters: dist,
+          availableSpaces: availCount,
+          totalSpaces: totalCount,
+          hourlyRate,
+          description: desc || "公有/民營路外停車場",
+          hasCharging: charging.hasCharging,
+          chargingSpaces: charging.chargingSpaces,
+          chargingInfo: charging.chargingInfo,
+          isFull,
+          isClosed,
+          statusText,
+        };
+      })
+      .filter((p) => p.distanceMeters <= 1500); // 太遠就放棄 (1500m)
 
     results.sort((a, b) => a.distanceMeters - b.distanceMeters);
-    return results.slice(0, 6);
+    return results.slice(0, 10);
   } catch (err) {
     console.error("[TDX] fetchParking error:", err);
     return [];
@@ -494,7 +638,7 @@ async function fetchNearbyBusStops(
   radius: number
 ) {
   try {
-    const stopUrl = `https://tdx.transportdata.tw/api/basic/v2/Bus/Stop/City/${city}?$spatialFilter=nearby(${lat},${lon},${radius})&$top=8&$format=JSON`;
+    const stopUrl = `https://tdx.transportdata.tw/api/basic/v2/Bus/Stop/City/${city}?$spatialFilter=nearby(${lat},${lon},${radius})&$top=80&$format=JSON`;
     const stopResp = await fetch(stopUrl, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -507,6 +651,7 @@ async function fetchNearbyBusStops(
     const stops = (await stopResp.json()) as Array<{
       StopUID: string;
       StopID: string;
+      StationID?: string;
       StopName?: { Zh_tw?: string };
       StopAddress?: string;
       StopPosition?: { PositionLat?: number; PositionLon?: number };
@@ -514,11 +659,68 @@ async function fetchNearbyBusStops(
 
     if (!stops || stops.length === 0) return [];
 
-    const uids = stops.map((s) => s.StopUID).filter(Boolean);
-    const filterParts = uids.map((id) => `StopUID eq %27${encodeURIComponent(id)}%27`).join(" or ");
-    const etaUrl = `https://tdx.transportdata.tw/api/basic/v2/Bus/EstimatedTimeOfArrival/City/${city}?$filter=${filterParts}&$top=40&$format=JSON`;
+    // Group per-route stop points into unified physical stations (架構：站牌 -> 公車)
+    interface PhysicalStation {
+      id: string;
+      name: string;
+      address: string;
+      lat: number;
+      lon: number;
+      distanceMeters: number;
+      stopUIDs: string[];
+    }
 
-    const etaMap = new Map<
+    const stationMap = new Map<string, PhysicalStation>();
+
+    for (const s of stops) {
+      const sLat = s.StopPosition?.PositionLat ?? lat;
+      const sLon = s.StopPosition?.PositionLon ?? lon;
+      const dist = calculateDistanceMeters(lat, lon, sLat, sLon);
+      if (dist > 1000) continue; // 太遠就放棄 (1000m 步行限制)
+
+      const stationName = s.StopName?.Zh_tw || "公車站牌";
+      const groupKey = stationName;
+      const existing = stationMap.get(groupKey);
+      if (!existing) {
+        stationMap.set(groupKey, {
+          id: s.StopUID,
+          name: stationName,
+          address: s.StopAddress || "",
+          lat: sLat,
+          lon: sLon,
+          distanceMeters: dist,
+          stopUIDs: [s.StopUID],
+        });
+      } else {
+        if (dist < existing.distanceMeters) {
+          existing.distanceMeters = dist;
+          existing.lat = sLat;
+          existing.lon = sLon;
+        }
+        if (!existing.address && s.StopAddress) {
+          existing.address = s.StopAddress;
+        }
+        if (!existing.stopUIDs.includes(s.StopUID)) {
+          existing.stopUIDs.push(s.StopUID);
+        }
+      }
+    }
+    const physicalStations = Array.from(stationMap.values());
+    physicalStations.sort((a, b) => a.distanceMeters - b.distanceMeters); // 越靠近目前位置的站牌越前面排
+    const targetStations = physicalStations.slice(0, 10); // 站牌最多 10 筆
+    if (targetStations.length === 0) return [];
+
+    // Collect all unique StopUIDs across the top 10 physical stations
+    const allUIDs: string[] = Array.from(new Set(targetStations.flatMap((st) => st.stopUIDs)));
+
+    // Fetch ETAs in parallel batches of 40 to ensure no URL overflow and 100% complete route coverage
+    const batchSize = 40;
+    const batches: string[][] = [];
+    for (let i = 0; i < allUIDs.length; i += batchSize) {
+      batches.push(allUIDs.slice(i, i + batchSize));
+    }
+
+    const etaByStopUID = new Map<
       string,
       Array<{
         routeName: string;
@@ -529,11 +731,17 @@ async function fetchNearbyBusStops(
     >();
 
     try {
-      const etaResp = await fetch(etaUrl, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (etaResp.ok) {
-        const etas = (await etaResp.json()) as Array<{
+      const responses = await Promise.all(
+        batches.map((batch) => {
+          const filterParts = batch.map((id) => `StopUID eq %27${encodeURIComponent(id)}%27`).join(" or ");
+          const etaUrl = `https://tdx.transportdata.tw/api/basic/v2/Bus/EstimatedTimeOfArrival/City/${city}?$filter=${filterParts}&$top=500&$format=JSON`;
+          return fetch(etaUrl, { headers: { Authorization: `Bearer ${token}` } });
+        })
+      );
+
+      for (const resp of responses) {
+        if (!resp.ok) continue;
+        const etas = (await resp.json()) as Array<{
           StopUID: string;
           RouteName?: { Zh_tw?: string };
           EstimateTime?: number;
@@ -541,6 +749,7 @@ async function fetchNearbyBusStops(
         }>;
 
         for (const item of etas) {
+          const stopUID = item.StopUID;
           const rName = item.RouteName?.Zh_tw || "公車";
           let estimateMinutes: number | null = null;
           let statusText = "未發車";
@@ -566,10 +775,10 @@ async function fetchNearbyBusStops(
             statusText = statusMap[item.StopStatus ?? 0] || "尚未發車";
           }
 
-          if (!etaMap.has(item.StopUID)) {
-            etaMap.set(item.StopUID, []);
+          if (!etaByStopUID.has(stopUID)) {
+            etaByStopUID.set(stopUID, []);
           }
-          etaMap.get(item.StopUID)!.push({
+          etaByStopUID.get(stopUID)!.push({
             routeName: rName,
             estimateMinutes,
             statusText,
@@ -581,14 +790,35 @@ async function fetchNearbyBusStops(
       console.warn("[TDX] Bus ETA query error:", e);
     }
 
-    const results = stops.map((s) => {
-      const sLat = s.StopPosition?.PositionLat ?? lat;
-      const sLon = s.StopPosition?.PositionLon ?? lon;
-      const dist = calculateDistanceMeters(lat, lon, sLat, sLon);
-      const rawRoutes = etaMap.get(s.StopUID) || [];
+    // For each physical station, assemble all passing routes and sort by arrival time
+    const results = targetStations.map((st) => {
+      const routeMap = new Map<
+        string,
+        {
+          routeName: string;
+          estimateMinutes: number | null;
+          statusText: string;
+          isArrivingSoon: boolean;
+        }
+      >();
 
-      // Sort routes: arriving soon first, then by minutes, then undispatched
-      const sortedRoutes = [...rawRoutes].sort((a, b) => {
+      for (const uid of st.stopUIDs) {
+        const list = etaByStopUID.get(uid) || [];
+        for (const r of list) {
+          const existing = routeMap.get(r.routeName);
+          if (!existing) {
+            routeMap.set(r.routeName, r);
+          } else if (r.estimateMinutes != null) {
+            if (existing.estimateMinutes == null || r.estimateMinutes < existing.estimateMinutes) {
+              routeMap.set(r.routeName, r);
+            }
+          }
+        }
+      }
+
+      const rawRoutes = Array.from(routeMap.values());
+      // Sort routes: soonest arriving first (照時間排，越快到越前面), then undispatched
+      const sortedRoutes = rawRoutes.sort((a, b) => {
         if (a.estimateMinutes != null && b.estimateMinutes != null) {
           return a.estimateMinutes - b.estimateMinutes;
         }
@@ -598,18 +828,17 @@ async function fetchNearbyBusStops(
       });
 
       return {
-        id: s.StopUID,
-        name: s.StopName?.Zh_tw ?? "公車站牌",
-        address: s.StopAddress || "",
-        lat: sLat,
-        lon: sLon,
-        distanceMeters: dist,
-        routes: sortedRoutes.slice(0, 6),
+        id: st.id,
+        name: st.name,
+        address: st.address,
+        lat: st.lat,
+        lon: st.lon,
+        distanceMeters: st.distanceMeters,
+        routes: sortedRoutes.slice(0, 10), // 每個站牌最多 10 筆公車
       };
     });
 
-    results.sort((a, b) => a.distanceMeters - b.distanceMeters);
-    return results.slice(0, 6);
+    return results; // 站牌最多 10 筆
   } catch (err) {
     console.error("[TDX] fetchNearbyBusStops error:", err);
     return [];
@@ -692,7 +921,7 @@ async function fetchWeather(cwaKey: string | undefined, locationName: string) {
 function generateSmartAdvice(
   weather: { condition: string; rainProbability: number },
   youbikes: Array<{ name: string; availableBikes: number; distanceMeters: number }>,
-  parkingLots: Array<{ name: string; availableSpaces: number; distanceMeters: number; hourlyRate: string }>,
+  parkingLots: Array<{ name: string; availableSpaces: number; distanceMeters: number; hourlyRate: string | null }>,
   busStops: Array<{ name: string; distanceMeters: number; routes: Array<{ routeName: string; estimateMinutes: number | null }> }>
 ): { title: string; summary: string; detail: string; type: "bike" | "parking" | "bus" | "weather" | "general" } {
   // 1. Rain alert
@@ -752,7 +981,7 @@ function generateSmartAdvice(
   if (goodPark) {
     return {
       title: "🅿 停車位充裕",
-      summary: `鄰近「${goodPark.name}」車位充足（${goodPark.hourlyRate}）`,
+      summary: `鄰近「${goodPark.name}」車位充足${goodPark.hourlyRate ? `（${goodPark.hourlyRate}）` : ""}`,
       detail: `距離約 ${goodPark.distanceMeters} 公尺，目前剩餘 ${goodPark.availableSpaces} 格車位，適合快速泊車。`,
       type: "parking",
     };

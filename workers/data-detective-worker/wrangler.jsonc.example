@@ -1,0 +1,24 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "motc-data-detective-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-05-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1.0
+  },
+  "vars": {
+    "ENVIRONMENT": "production",
+    "LINE_CHANNEL_ID_DEV": "your_channel_id_dev",
+    "LINE_CHANNEL_ID_REVIEW": "your_channel_id_review",
+    "LINE_CHANNEL_ID_PUB": "your_channel_id_pub",
+    "LIFF_URL_DEV": "https://miniapp.line.me/your_liff_id_dev",
+    "LIFF_URL_REVIEW": "https://miniapp.line.me/your_liff_id_review",
+    "LIFF_URL_PUB": "https://miniapp.line.me/your_liff_id_pub",
+    "TDX_BASIC_PORTAL_URL": "https://tdx.transportdata.tw/data-service/basic",
+    "MINI_APP_SEARCH_URL": "https://motc-mini-dog.pages.dev/search.html"
+  }
+}

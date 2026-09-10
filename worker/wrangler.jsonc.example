@@ -1,0 +1,27 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "motc-line-bot-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-05-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1.0
+  },
+  "vars": {
+    "ENVIRONMENT": "production",
+    "LINE_CHANNEL_ID": "your_line_channel_id_here",
+    "TDX_PORTAL_URL": "https://tdx.transportdata.tw/",
+    "MINI_APP_URL": "https://motc-mini-dog.pages.dev/",
+    "PROJECT_MGMT_URL": "https://ai.studio/apps/your-app-id",
+    "GOOGLE_FORM_URL": "https://docs.google.com/forms/d/e/your-form-id/viewform",
+    "FEEDBACK_FORM_URL": "https://docs.google.com/forms/d/e/your-feedback-form-id/viewform",
+    "DETECTIVE_LIFF_URL": "https://miniapp.line.me/your-liff-id",
+    "DETECTIVE_WEB_URL": "https://motc-mini-dog.pages.dev/search",
+    "APPS_SCRIPT_AUTH_URL": "https://script.google.com/macros/s/your-app-script-id/exec",
+    "KNOWN_INTERNAL_USER_IDS": "",
+    "NEEDLE_API_URL": "http://127.0.0.1:8000/route"
+  }
+}

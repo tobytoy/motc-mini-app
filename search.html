@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>motc-mini-search | 資料查詢小偵探</title>
+    <meta name="description" content="LINE Mini App - 資料查詢小偵探 (TDX 738+ API 探勘與檢索)" />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <!-- App Styles -->
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-top">
+          <div class="brand">
+            <span class="brand-icon">🕵️‍♂️</span>
+            <div class="brand-text">
+              <h1 class="brand-title">資料查詢小偵探</h1>
+              <span class="brand-sub">motc-mini-search • TDX 738+ API</span>
+            </div>
+          </div>
+          <div class="header-actions">
+            <a href="/" class="theme-toggle-btn" title="切換回周邊交通助手" aria-label="回到周邊交通">
+              <span>🐶</span>
+            </a>
+            <button id="themeToggleBtn" class="theme-toggle-btn" title="切換深淺色模式" aria-label="切換深淺色模式">
+              <span id="themeIcon">🌙</span>
+            </button>
+            <div id="userBadge" class="user-badge">
+              <div class="avatar-placeholder" id="userAvatar">👤</div>
+              <span id="userName" class="user-name">載入中...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-bar-wrap">
+          <div class="search-input-box">
+            <span class="search-icon">🔍</span>
+            <input
+              type="search"
+              id="searchInput"
+              class="search-input"
+              placeholder="搜尋 API 名稱、端點或關鍵字 (例：公車動態、停車場、易肇事)"
+              autocomplete="off"
+            />
+            <div class="search-input-actions">
+              <button id="clearSearchBtn" class="search-clear-btn" style="display: none;" title="清除">✕</button>
+              <button id="voiceSearchBtn" class="voice-search-btn" title="語音輸入搜尋" aria-label="語音輸入搜尋">🎙️</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Filter Controls -->
+        <div class="search-filters-bar">
+          <!-- City Select -->
+          <div class="filter-control">
+            <select id="citySelect" class="filter-select">
+              <option value="">🗺️ 全臺縣市</option>
+              <option value="Taipei">臺北市</option>
+              <option value="NewTaipei">新北市</option>
+              <option value="Taoyuan">桃園市</option>
+              <option value="Taichung">臺中市</option>
+              <option value="Tainan">臺南市</option>
+              <option value="Kaohsiung">高雄市</option>
+              <option value="Keelung">基隆市</option>
+              <option value="Hsinchu">新竹市</option>
+              <option value="HsinchuCounty">新竹縣</option>
+              <option value="MiaoliCounty">苗栗縣</option>
+              <option value="ChanghuaCounty">彰化縣</option>
+              <option value="NantouCounty">南投縣</option>
+              <option value="YunlinCounty">雲林縣</option>
+              <option value="Chiayi">嘉義市</option>
+              <option value="ChiayiCounty">嘉義縣</option>
+              <option value="PingtungCounty">屏東縣</option>
+              <option value="YilanCounty">宜蘭縣</option>
+              <option value="HualienCounty">花蓮縣</option>
+              <option value="TaitungCounty">臺東縣</option>
+              <option value="PenghuCounty">澎湖縣</option>
+              <option value="KinmenCounty">金門縣</option>
+              <option value="LienchiangCounty">連江縣</option>
+            </select>
+          </div>
+
+          <!-- Restricted Toggle -->
+          <div class="filter-control">
+            <select id="restrictedSelect" class="filter-select">
+              <option value="">🔒 所有權限</option>
+              <option value="false">🟢 僅顯示免審核 (公開)</option>
+              <option value="true">🔒 僅顯示專案審查</option>
+            </select>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Category Segmented Tabs -->
+        <section class="filter-section">
+          <div class="tabs-segmented category-scroll-tabs">
+            <button class="tab-btn active" data-cat="">
+              <span>🌟 全部</span>
+              <span id="countTotal" class="tab-count">738</span>
+            </button>
+            <button class="tab-btn" data-special="hot">
+              <span>🔥 熱門推薦</span>
+              <span id="countHot" class="tab-count">177</span>
+            </button>
+            <button class="tab-btn" data-special="new">
+              <span>🆕 最新上線</span>
+              <span id="countNew" class="tab-count">65</span>
+            </button>
+            <button class="tab-btn" data-cat="基礎服務">
+              <span>🚌 基礎服務</span>
+              <span id="countBasic" class="tab-count">213</span>
+            </button>
+            <button class="tab-btn" data-cat="加值服務">
+              <span>📊 加值服務</span>
+              <span id="countPremium" class="tab-count">201</span>
+            </button>
+            <button class="tab-btn" data-cat="票證服務">
+              <span>🎫 票證服務</span>
+              <span id="countTicket" class="tab-count">155</span>
+            </button>
+            <button class="tab-btn" data-cat="歷史服務">
+              <span>📁 歷史道安</span>
+              <span id="countHistory" class="tab-count">99</span>
+            </button>
+            <button class="tab-btn" data-cat="進階服務">
+              <span>🛣️ 道路編碼</span>
+              <span id="countAdvanced" class="tab-count">21</span>
+            </button>
+            <button class="tab-btn" data-cat="觀光景點服務">
+              <span>🏞️ 觀光景點</span>
+              <span id="countTourism" class="tab-count">10</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Stats and Results Summary -->
+        <section class="results-summary-bar">
+          <span id="resultsCountText" class="results-count-text">共找到 738 支 API 資料集</span>
+          <span class="results-hint">💡 點選卡片可複製 API 路徑</span>
+        </section>
+
+        <!-- API List Grid -->
+        <section class="list-section">
+          <!-- Loading skeleton -->
+          <div id="listLoader" class="skeleton-list" style="display: none;">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+
+          <!-- Empty State -->
+          <div id="emptyState" class="empty-state" style="display: none;">
+            <span class="empty-icon">🔍</span>
+            <p class="empty-title">查無符合條件之 API</p>
+            <p class="empty-desc">請嘗試更換關鍵字、清除縣市過濾，或選擇其他服務類別。</p>
+          </div>
+
+          <!-- Cards Grid -->
+          <div id="apiCardsGrid" class="cards-grid"></div>
+        </section>
+      </main>
+
+
+      <!-- Toast Notification -->
+      <div id="toast" class="toast-notification" style="display: none;">
+        <span id="toastIcon">📋</span>
+        <span id="toastMsg">已複製 API 路徑到剪貼簿！</span>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="/src/search.ts"></script>
+  </body>
+</html>

@@ -69,7 +69,7 @@
         <div class="action-bar">
           <button id="locateBtn" class="btn btn-primary" title="取得目前位置">
             <span class="btn-icon">🎯</span>
-            <span class="btn-text">分享目前位置</span>
+            <span class="btn-text">目前位置</span>
           </button>
           <button id="refreshBtn" class="btn btn-secondary" title="重新整理資訊">
             <span class="btn-icon">🔄</span>
@@ -115,22 +115,22 @@
         <section class="filter-section">
           <div class="tabs-segmented">
             <button class="tab-btn active" data-filter="all">
-              <span>全部清單</span>
+              <span>🌟 全部</span>
               <span id="countAll" class="tab-count">0</span>
             </button>
             <button class="tab-btn" data-filter="bike">
               <span>🚲 YouBike</span>
               <span id="countBike" class="tab-count">0</span>
             </button>
-            <button class="tab-btn" data-filter="parking">
-              <span>🅿 停車場</span>
-              <span id="countParking" class="tab-count">0</span>
-            </button>
             <button class="tab-btn" data-filter="bus">
               <span>🚌 公車</span>
               <span id="countBus" class="tab-count">0</span>
             </button>
-        </section>
+            <button class="tab-btn" data-filter="parking">
+              <span>🅿️ 停車場</span>
+              <span id="countParking" class="tab-count">0</span>
+            </button>
+          </div>
 
         <!-- Transport Lists -->
         <section class="list-section">
@@ -145,7 +145,7 @@
           <div id="emptyState" class="empty-state" style="display: none;">
             <span class="empty-icon">🔍</span>
             <p class="empty-title">方圓 1 公里內查無設施</p>
-            <p class="empty-desc">請點擊上方「分享目前位置」重新取得定位，或擴大搜尋範圍。</p>
+            <p class="empty-desc">請點擊上方「目前位置」重新取得定位，或擴大搜尋範圍。</p>
           </div>
 
           <!-- Cards Grid -->

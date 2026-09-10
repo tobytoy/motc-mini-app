@@ -1,0 +1,7 @@
+# LINE Messaging API Credentials for Data Detective
+LINE_CHANNEL_SECRET_DEV=your_line_channel_secret_dev_here
+LINE_CHANNEL_SECRET_REVIEW=your_line_channel_secret_review_here
+LINE_CHANNEL_SECRET_PUB=your_line_channel_secret_pub_here
+
+# Optional AI API Key (Gemini)
+GEMINI_API_KEY=

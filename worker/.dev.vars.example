@@ -1,0 +1,11 @@
+# LINE Messaging API Credentials
+LINE_CHANNEL_ID=2011514766
+LINE_CHANNEL_SECRET=your_line_channel_secret_here
+LINE_CHANNEL_ACCESS_TOKEN=
+
+# Optional AI API Key (Gemini)
+GEMINI_API_KEY=
+
+# Optional Needle Classifier API
+NEEDLE_API_URL=http://127.0.0.1:8000/route
+NEEDLE_API_KEY=

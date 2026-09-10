@@ -373,15 +373,24 @@ function renderCardsList(): void {
   if (showBikes) {
     for (const b of youbikes) items.push({ kind: "bike", data: b });
   }
-  if (showParking) {
-    for (const p of parkingLots) items.push({ kind: "parking", data: p });
-  }
   if (showBus) {
     for (const b of busStops) items.push({ kind: "bus", data: b });
   }
-  // Sort unified list by distance ascending
-  items.sort((a, b) => a.data.distanceMeters - b.data.distanceMeters);
+  if (showParking) {
+    for (const p of parkingLots) items.push({ kind: "parking", data: p });
+  }
 
+  // Priority ordering: YouBike -> Bus -> Parking
+  const categoryOrder: Record<string, number> = { bike: 0, bus: 1, parking: 2 };
+  items.sort((a, b) => {
+    if (state.activeFilter === "all") {
+      return (
+        categoryOrder[a.kind] - categoryOrder[b.kind] ||
+        a.data.distanceMeters - b.data.distanceMeters
+      );
+    }
+    return a.data.distanceMeters - b.data.distanceMeters;
+  });
   if (items.length === 0) {
     DOM.emptyState.style.display = "block";
     return;
@@ -402,57 +411,38 @@ function renderCardsList(): void {
             <span class="card-type-icon">🚲</span>
             <div class="card-name">${b.name}</div>
           </div>
-          <span class="distance-tag">${b.distanceMeters}m • 步行 ${walkMins} 分</span>
+          <div class="card-badges-group">
+            ${b.isSuspended ? `<span class="badge badge-suspended" title="此站點因施工、維護或特殊管制暫停借還車">🚧 暫停營運</span>` : ""}
+            <span class="distance-tag">📍 ${b.distanceMeters}m • 🚶 ${walkMins}m</span>
+          </div>
         </div>
         <div class="card-metrics">
-          <span class="metric-pill pill-rent">
-            可借 <span class="metric-val">${b.availableBikes}</span> 台
-          </span>
-          <span class="metric-pill pill-return">
-            可還 <span class="metric-val">${b.emptySpaces}</span> 格
-          </span>
+          ${b.isSuspended ? `
+            <span class="metric-pill pill-suspended" title="此站點目前暫停提供借還車服務">
+              🚧 全站暫停借還 (${b.totalCapacity} 柱維修停用中)
+            </span>
+          ` : `
+            <span class="metric-pill pill-rent" title="一般 YouBike 2.0 可借數量">
+              🟢 🚲 <strong>${b.generalBikes ?? b.availableBikes}</strong>
+            </span>
+            ${(b.electricBikes && b.electricBikes > 0) ? `
+              <span class="metric-pill pill-electric" title="YouBike 2.0E 電輔車可借數量">
+                ⚡ 🚲 <strong>${b.electricBikes}</strong>
+              </span>
+            ` : ""}
+            <span class="metric-pill pill-return" title="目前可歸還空車位">
+              🔵 🅿️ 可還 <strong>${b.emptySpaces}</strong>
+            </span>
+            <span class="metric-pill pill-rate" title="站點總容量${(b.suspendedSpaces && b.suspendedSpaces > 0) ? ` (含 ${b.suspendedSpaces} 柱維修或停用)` : ''}">
+              📊 總 <strong>${b.totalCapacity}</strong>${(b.suspendedSpaces && b.suspendedSpaces > 0) ? `<span style="font-size:10px;opacity:0.75;margin-left:2px;">(-${b.suspendedSpaces})</span>` : ""}
+            </span>
+          `}
         </div>
         <div class="card-bottom">
-          <span class="card-address" title="${b.address}">${b.address || "捷運/商圈周邊"}</span>
+          <span class="card-address" title="${b.address}">${b.address || "YouBike 2.0 站點"}</span>
           <div class="card-actions">
             <button class="btn-card" data-action="locate" data-id="${b.id}" data-lat="${b.lat}" data-lon="${b.lon}">
-              📍 查看
-            </button>
-            <a href="${navUrl}" target="_blank" rel="noopener noreferrer" class="btn-card btn-nav-action">
-              🧭 導航
-            </a>
-          </div>
-        </div>
-      `;
-      DOM.cardsGrid.appendChild(card);
-    } else if (item.kind === "parking") {
-      const p = item.data;
-      const driveMins = Math.max(1, Math.round(p.distanceMeters / 300));
-      const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lon}&travelmode=driving`;
-
-      const card = document.createElement("div");
-      card.className = "facility-card";
-      card.innerHTML = `
-        <div class="card-top">
-          <div class="card-title-group">
-            <span class="card-type-icon">🅿</span>
-            <div class="card-name">${p.name}</div>
-          </div>
-          <span class="distance-tag">${p.distanceMeters}m • 車程 ${driveMins} 分</span>
-        </div>
-        <div class="card-metrics">
-          <span class="metric-pill pill-parking-avail">
-            剩餘 <span class="metric-val">${p.availableSpaces}</span> 格
-          </span>
-          <span class="metric-pill pill-rate">
-            費率 ${p.hourlyRate}
-          </span>
-        </div>
-        <div class="card-bottom">
-          <span class="card-address" title="${p.address}">${p.address || p.description}</span>
-          <div class="card-actions">
-            <button class="btn-card" data-action="locate" data-id="${p.id}" data-lat="${p.lat}" data-lon="${p.lon}">
-              📍 查看
+              📍
             </button>
             <a href="${navUrl}" target="_blank" rel="noopener noreferrer" class="btn-card btn-nav-action">
               🧭 導航
@@ -466,16 +456,48 @@ function renderCardsList(): void {
       const walkMins = Math.max(1, Math.round(b.distanceMeters / 80));
       const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${b.lat},${b.lon}&travelmode=walking`;
 
-      const routePills = b.routes.map((r) => {
-        const arrivingClass = r.isArrivingSoon ? "bus-route-arriving" : "";
-        return `
-          <span class="bus-route-pill ${arrivingClass}">
-            <span class="bus-route-name">${r.routeName}</span>
-            <span class="bus-route-eta">${r.statusText}</span>
-          </span>
-        `;
-      }).join("");
+      const routePills = b.routes.length > 0
+        ? b.routes.map((r) => {
+            if (r.isArrivingSoon) {
+              return `
+                <span class="bus-route-pill bus-route-arriving">
+                  <span class="bus-route-name">⚡ ${r.routeName}</span>
+                  <span class="bus-route-eta">${r.statusText}</span>
+                </span>
+              `;
+            }
+            if (r.estimateMinutes != null) {
+              return `
+                <span class="bus-route-pill">
+                  <span class="bus-route-name">⏱️ ${r.routeName}</span>
+                  <span class="bus-route-eta">${r.estimateMinutes}m</span>
+                </span>
+              `;
+            }
+            const icon = r.statusText.includes("末班") ? "🌙" : "⏸️";
+            return `
+              <span class="bus-route-pill bus-route-idle">
+                <span class="bus-route-name">${icon} ${r.routeName}</span>
+                <span class="bus-route-eta">${r.statusText}</span>
+              </span>
+            `;
+          }).join("")
+        : '<span style="font-size:12px;color:var(--text-muted);padding:4px 0;">目前無即時班次</span>';
 
+      // Summary snippet for toggle bar (e.g. 🚌 6 路線 (257, 299, 212直…) • ⚡ 257 即進)
+      const topRouteNames = b.routes.slice(0, 3).map((r) => r.routeName).join(", ");
+      const routeSnippet = b.routes.length > 3 ? `${topRouteNames}…` : topRouteNames;
+      let summaryText = `🚌 ${b.routes.length} 路線 ${routeSnippet ? `(${routeSnippet})` : ""}`;
+      if (b.routes.length > 0) {
+        const fastest = b.routes[0];
+        if (fastest.isArrivingSoon) {
+          summaryText += ` • ⚡ ${fastest.routeName} 即進`;
+        } else if (fastest.estimateMinutes != null) {
+          summaryText += ` • ⏱️ ${fastest.routeName} ${fastest.estimateMinutes}m`;
+        } else {
+          summaryText += ` • ⏸️ ${fastest.routeName}`;
+        }
+      }
       const card = document.createElement("div");
       card.className = "facility-card";
       card.innerHTML = `
@@ -484,16 +506,71 @@ function renderCardsList(): void {
             <span class="card-type-icon">🚌</span>
             <div class="card-name">${b.name}</div>
           </div>
-          <span class="distance-tag">${b.distanceMeters}m • 步行 ${walkMins} 分</span>
+          <span class="distance-tag">📍 ${b.distanceMeters}m • 🚶 ${walkMins}m</span>
         </div>
-        <div class="bus-routes-wrap">
-          ${routePills || '<span style="font-size:12px;color:var(--text-muted);">目前無即時到站路線</span>'}
+        <div class="bus-toggle-header" data-toggle="bus" data-target="bus-routes-${b.id}">
+          <span>${summaryText}</span>
+          <span class="bus-toggle-icon">▾ 展開</span>
+        </div>
+        <div class="bus-routes-collapsible" id="bus-routes-${b.id}" style="display: none;">
+          <div class="bus-routes-wrap">
+            ${routePills}
+          </div>
         </div>
         <div class="card-bottom">
-          <span class="card-address" title="${b.address}">${b.address || "幹道公車站牌"}</span>
+          <span class="card-address" title="${b.address}">${b.address || "市區公車站牌"}</span>
           <div class="card-actions">
             <button class="btn-card" data-action="locate" data-id="${b.id}" data-lat="${b.lat}" data-lon="${b.lon}">
-              📍 查看
+              📍
+            </button>
+            <a href="${navUrl}" target="_blank" rel="noopener noreferrer" class="btn-card btn-nav-action">
+              🧭 導航
+            </a>
+          </div>
+        </div>
+      `;
+      DOM.cardsGrid.appendChild(card);
+    } else if (item.kind === "parking") {
+      const p = item.data;
+      const driveMins = Math.max(1, Math.round(p.distanceMeters / 300));
+      const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lon}&travelmode=driving`;
+
+      const chargingPill = p.hasCharging
+        ? `<span class="metric-pill pill-charging">${p.chargingInfo || '⚡ 充電位'}</span>`
+        : "";
+      const availPill = p.isClosed
+        ? `<span class="metric-pill pill-suspended" title="此停車場目前暫停對外開放">🚧 暫停營業</span>`
+        : (p.isFull || p.availableSpaces === 0)
+          ? `<span class="metric-pill pill-full" title="目前剩餘車位為 0">🔴 客滿 (0/${p.totalSpaces})</span>`
+          : `<span class="metric-pill pill-parking-avail">🟢 <strong>${p.availableSpaces}</strong>/${p.totalSpaces}</span>`;
+
+      const ratePill = (p.hourlyRate && p.hourlyRate !== "依現場公告")
+        ? `<span class="metric-pill pill-rate" title="停車費率參考">💲 <strong>${p.hourlyRate}</strong></span>`
+        : "";
+
+      const card = document.createElement("div");
+      card.className = `facility-card ${p.isClosed ? 'card-suspended' : ''}`;
+      card.innerHTML = `
+        <div class="card-top">
+          <div class="card-title-group">
+            <span class="card-type-icon">🅿️</span>
+            <div class="card-name">${p.name}</div>
+          </div>
+          <div class="card-badges-group">
+            ${p.isClosed ? `<span class="badge badge-suspended">🚧 暫停營業</span>` : ""}
+            ${(!p.isClosed && (p.isFull || p.availableSpaces === 0)) ? `<span class="badge badge-suspended">🔴 客滿</span>` : ""}
+            <span class="distance-tag">📍 ${p.distanceMeters}m • 🚗 ${driveMins}m</span>
+          </div>
+        </div>
+        <div class="card-metrics">
+          ${availPill}
+          ${ratePill}
+          ${chargingPill}
+        </div>
+          <span class="card-address" title="${p.address}">${p.address || p.description}</span>
+          <div class="card-actions">
+            <button class="btn-card" data-action="locate" data-id="${p.id}" data-lat="${p.lat}" data-lon="${p.lon}">
+              📍
             </button>
             <a href="${navUrl}" target="_blank" rel="noopener noreferrer" class="btn-card btn-nav-action">
               🧭 導航
@@ -504,6 +581,24 @@ function renderCardsList(): void {
       DOM.cardsGrid.appendChild(card);
     }
   }
+
+  // Bind collapsible bus routes toggle (預設縮起來，點一下展開，點一下收起來)
+  const toggleHeaders = DOM.cardsGrid.querySelectorAll<HTMLElement>('.bus-toggle-header[data-toggle="bus"]');
+  toggleHeaders.forEach((header) => {
+    header.addEventListener("click", () => {
+      const targetId = header.getAttribute("data-target");
+      if (!targetId) return;
+      const content = document.getElementById(targetId);
+      if (!content) return;
+      const isHidden = content.style.display === "none";
+      content.style.display = isHidden ? "block" : "none";
+      const icon = header.querySelector<HTMLElement>(".bus-toggle-icon");
+      if (icon) {
+        icon.textContent = isHidden ? "▴ 收起" : "▾ 展開";
+      }
+      header.classList.toggle("open", isHidden);
+    });
+  });
   // Bind view position buttons
   const locateButtons = DOM.cardsGrid.querySelectorAll<HTMLButtonElement>('button[data-action="locate"]');
   locateButtons.forEach((btn) => {
@@ -530,7 +625,7 @@ function handleGetLocation(): void {
     alert("您的瀏覽器或裝置不支援 GPS 定位服務，將使用台北車站作為預設中心點。");
     fetchNearbyData(state.currentLat, state.currentLon);
     DOM.locateBtn.disabled = false;
-    DOM.locateBtn.querySelector(".btn-text")!.textContent = "分享目前位置";
+    DOM.locateBtn.querySelector(".btn-text")!.textContent = "目前位置";
     return;
   }
 
@@ -540,7 +635,7 @@ function handleGetLocation(): void {
       state.currentLon = pos.coords.longitude;
       fetchNearbyData(state.currentLat, state.currentLon);
       DOM.locateBtn.disabled = false;
-      DOM.locateBtn.querySelector(".btn-text")!.textContent = "分享目前位置";
+      DOM.locateBtn.querySelector(".btn-text")!.textContent = "目前位置";
     },
     (err) => {
       console.warn("[Geolocation] Error:", err.message);
@@ -549,7 +644,7 @@ function handleGetLocation(): void {
       state.currentLon = DEFAULT_CONFIG.DEFAULT_LON;
       fetchNearbyData(state.currentLat, state.currentLon);
       DOM.locateBtn.disabled = false;
-      DOM.locateBtn.querySelector(".btn-text")!.textContent = "分享目前位置";
+      DOM.locateBtn.querySelector(".btn-text")!.textContent = "目前位置";
     },
     {
       enableHighAccuracy: true,

@@ -8,7 +8,13 @@
     "build": "vite build",
     "preview": "vite preview",
     "pages:dev": "wrangler pages dev dist --binding TDX_CLIENT_ID=$TDX_CLIENT_ID TDX_CLIENT_SECRET=$TDX_CLIENT_SECRET CWA_API_KEY=$CWA_API_KEY",
-    "deploy": "vite build && wrangler pages deploy dist --project-name=motc-mini-dog"
+    "deploy": "vite build && wrangler pages deploy dist --project-name=motc-mini-dog",
+    "worker:dev": "cd worker && wrangler dev",
+    "worker:deploy": "cd worker && wrangler deploy",
+    "worker:test": "cd worker && npm test",
+    "detective:dev": "cd workers/data-detective-worker && wrangler dev",
+    "detective:deploy": "cd workers/data-detective-worker && wrangler deploy",
+    "detective:test": "cd workers/data-detective-worker && npm test"
   },
   "dependencies": {
     "@line/liff": "^2.24.0",
