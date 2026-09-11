@@ -146,6 +146,7 @@ const state = {
   locations: [] as SavedLocation[],
   tripLogs: [] as TripLogItem[],
   geminiKey: localStorage.getItem("guardian_gemini_api_key") || "",
+  geminiModel: localStorage.getItem("guardian_gemini_model") || "gemini-3.1-flash-lite",
 };
 
 // ==========================================
@@ -174,6 +175,8 @@ const DOM = {
   testGeminiBtn: document.getElementById("testGeminiBtn") as HTMLButtonElement,
   saveGeminiBtn: document.getElementById("saveGeminiBtn") as HTMLButtonElement,
   geminiStatusPill: document.getElementById("geminiStatusPill") as HTMLElement,
+  geminiModelSelect: document.getElementById("geminiModelSelect") as HTMLSelectElement,
+  refreshModelsBtn: document.getElementById("refreshModelsBtn") as HTMLButtonElement,
 
   locationsGrid: document.getElementById("locationsGrid") as HTMLElement,
   addLocationBtn: document.getElementById("addLocationBtn") as HTMLButtonElement,
@@ -314,6 +317,62 @@ function renderGeminiKeyUI(): void {
     DOM.geminiStatusPill.className = "status-pill-warn";
     DOM.geminiStatusPill.textContent = "⚠️ 尚未設定金鑰";
   }
+  if (DOM.geminiModelSelect) {
+    DOM.geminiModelSelect.value = state.geminiModel;
+  }
+}
+
+async function fetchAndPopulateGeminiModels(key: string): Promise<boolean> {
+  try {
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+    if (!resp.ok) return false;
+    const data = (await resp.json()) as {
+      models?: Array<{
+        name: string;
+        displayName: string;
+        description?: string;
+        supportedGenerationMethods?: string[];
+      }>;
+    };
+
+    const validModels = (data.models || []).filter((m) =>
+      m.supportedGenerationMethods?.includes("generateContent")
+    );
+
+    if (validModels.length > 0 && DOM.geminiModelSelect) {
+      DOM.geminiModelSelect.innerHTML = "";
+      validModels.forEach((m) => {
+        const id = m.name.replace("models/", "");
+        const opt = document.createElement("option");
+        opt.value = id;
+
+        let badge = "🤖";
+        if (id.includes("flash-lite")) badge = "⚡ [極速省額度]";
+        else if (id.includes("flash")) badge = "🚀 [全能多模態]";
+        else if (id.includes("pro")) badge = "🧠 [深度推理旗艦]";
+
+        opt.textContent = `${badge} ${id} (${m.displayName || id})`;
+        if (id === state.geminiModel) {
+          opt.selected = true;
+        }
+        DOM.geminiModelSelect.appendChild(opt);
+      });
+
+      // Ensure valid selection
+      if (!validModels.some((m) => m.name.replace("models/", "") === state.geminiModel)) {
+        const fallback = validModels.find((m) => m.name.includes("flash-lite")) || validModels[0];
+        state.geminiModel = fallback.name.replace("models/", "");
+        DOM.geminiModelSelect.value = state.geminiModel;
+      }
+
+      localStorage.setItem("guardian_gemini_model", state.geminiModel);
+      return true;
+    }
+    return false;
+  } catch (err) {
+    console.warn("[Gemini Models] Fetch error:", err);
+    return false;
+  }
 }
 
 function renderLocations(): void {
@@ -443,6 +502,7 @@ function setupEventListeners(): void {
   });
 
   // Save Gemini Key
+  // Save Gemini Key & Model
   DOM.saveGeminiBtn.addEventListener("click", () => {
     const key = DOM.geminiApiKeyInput.value.trim();
     if (!key) {
@@ -450,12 +510,39 @@ function setupEventListeners(): void {
       return;
     }
     state.geminiKey = key;
+    state.geminiModel = DOM.geminiModelSelect.value;
     localStorage.setItem("guardian_gemini_api_key", key);
+    localStorage.setItem("guardian_gemini_model", state.geminiModel);
     renderGeminiKeyUI();
-    alert("Gemini API Key 已成功儲存！長輩端已開通自然語音問路與視覺看藥袋功能。");
+    alert(`Gemini 設定已成功儲存！\n目前指定模型：${state.geminiModel}\n長輩端已開通自然語音問路與視覺看藥袋功能。`);
   });
 
-  // Test Gemini Key
+  // Model selection change
+  DOM.geminiModelSelect.addEventListener("change", () => {
+    state.geminiModel = DOM.geminiModelSelect.value;
+    localStorage.setItem("guardian_gemini_model", state.geminiModel);
+  });
+
+  // Refresh models list button
+  DOM.refreshModelsBtn.addEventListener("click", async () => {
+    const key = DOM.geminiApiKeyInput.value.trim() || state.geminiKey;
+    if (!key) {
+      alert("請先輸入您的 Gemini API Key 再更新模型清單");
+      return;
+    }
+    DOM.refreshModelsBtn.disabled = true;
+    DOM.refreshModelsBtn.textContent = "更新中...";
+    const ok = await fetchAndPopulateGeminiModels(key);
+    DOM.refreshModelsBtn.disabled = false;
+    DOM.refreshModelsBtn.textContent = "🔄 即時更新模型清單";
+    if (ok) {
+      alert("🎉 已從 Google 伺服器同步您帳號的最新可用模型！");
+    } else {
+      alert("無法取得模型清單，請確認 API Key 是否正確。");
+    }
+  });
+
+  // Test Gemini Key and populate models
   DOM.testGeminiBtn.addEventListener("click", async () => {
     const key = DOM.geminiApiKeyInput.value.trim();
     if (!key) {
@@ -465,13 +552,14 @@ function setupEventListeners(): void {
     DOM.testGeminiBtn.disabled = true;
     DOM.testGeminiBtn.textContent = "連線驗證中...";
     try {
-      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
-      if (resp.ok) {
-        alert("🎉 驗證成功！Gemini API 連線正常。");
+      const ok = await fetchAndPopulateGeminiModels(key);
+      if (ok) {
         state.geminiKey = key;
         localStorage.setItem("guardian_gemini_api_key", key);
         renderGeminiKeyUI();
+        alert(`🎉 驗證成功！已成功連線 Google API 並為您載入所有授權模型！\n請直接由下方下拉選單選取您欲使用的模型（推薦 gemini-3.1-flash-lite）。`);
       } else {
+        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
         const err = await resp.text();
         alert(`驗證失敗 (HTTP ${resp.status}):\n${err}`);
       }
@@ -480,7 +568,7 @@ function setupEventListeners(): void {
       alert(`連線逾時或網路錯誤: ${msg}`);
     } finally {
       DOM.testGeminiBtn.disabled = false;
-      DOM.testGeminiBtn.textContent = "驗證連線";
+      DOM.testGeminiBtn.textContent = "驗證連線並載入模型";
     }
   });
 
