@@ -82,6 +82,8 @@ export default defineConfig({
         main: "index.html",
         search: "search.html",
         eagleEye: "eagle-eye.html",
+        guardian: "guardian.html",
+        silver: "silver.html",
       },
     },
   },

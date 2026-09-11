@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>家屬管理平台 | 銀髮出行守護員 (PC 電腦端)</title>
+    <meta name="description" content="銀髮出行守護員 - 家屬電腦代管控制台：常用地點與照片庫、生理輔具偏好、Gemini API Key 設定與長者綁定 QR Code。" />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <!-- App CSS -->
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body class="guardian-body">
+    <div class="guardian-layout">
+      <!-- Top Navigation -->
+      <header class="guardian-navbar">
+        <div class="navbar-brand">
+          <span class="brand-icon">🛡️</span>
+          <div class="brand-text">
+            <h1 class="brand-title">銀髮出行守護員 • 家屬代管平台</h1>
+            <span class="brand-sub">PC 控制中心 • 由家人安心代管，長輩極簡操作</span>
+          </div>
+        </div>
+        <div class="navbar-actions">
+          <div id="authUserInfo" class="auth-user-box" style="display: none;">
+            <span class="user-role-badge">管理者 (子女端)</span>
+            <span id="userEmailText" class="user-email">載入中...</span>
+            <button id="logoutBtn" class="btn btn-outline btn-sm">登出</button>
+          </div>
+          <div id="authGuestInfo" class="auth-guest-box">
+            <button id="openAuthModalBtn" class="btn btn-primary btn-sm">登入 / 註冊家屬帳號</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Dashboard Content -->
+      <main class="guardian-main">
+        <!-- Top Hero Grid: Elder Profile & Invite Code -->
+        <div class="guardian-grid-2">
+          <!-- Card: Senior Profile & Switcher -->
+          <section class="dash-card">
+            <div class="card-header">
+              <span class="card-header-icon">🧓</span>
+              <div class="card-header-text">
+                <h2 class="card-title">被守護長輩檔案</h2>
+                <p class="card-sub">代管長者的生理偏好與行動輔具規則</p>
+              </div>
+              <button id="editSeniorBtn" class="btn btn-outline btn-sm">編輯資料</button>
+            </div>
+            <div class="card-body">
+              <div class="senior-info-row">
+                <div class="senior-avatar-box">
+                  <span id="seniorAvatarText" class="senior-avatar-icon">👴</span>
+                </div>
+                <div class="senior-details">
+                  <div class="senior-name-row">
+                    <h3 id="seniorNameText" class="senior-name">王爸爸</h3>
+                    <span id="seniorAgeText" class="senior-age-badge">74 歲</span>
+                    <span id="seniorStatusBadge" class="senior-status-badge status-active">🟢 守護中</span>
+                  </div>
+                  <p id="seniorLineBindingText" class="senior-line-status">LINE 帳號綁定：已綁定 (UID: U4b5e0...)</p>
+                </div>
+              </div>
+
+              <!-- Mobility Rules Pill Box -->
+              <div class="mobility-rules-grid">
+                <div class="rule-chip">
+                  <span class="rule-icon">🚫</span>
+                  <span class="rule-label">避開階梯 (優先電梯)</span>
+                </div>
+                <div class="rule-chip">
+                  <span class="rule-icon">🚌</span>
+                  <span class="rule-label">強制低地板公車</span>
+                </div>
+                <div class="rule-chip">
+                  <span class="rule-icon">🚶</span>
+                  <span class="rule-label">單次步行 ≤ 300m</span>
+                </div>
+                <div class="rule-chip">
+                  <span class="rule-icon">🔕</span>
+                  <span class="rule-label">避開地下街迷宮</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Card: Senior LINE Pairing (QR Code & Invite Code) -->
+          <section class="dash-card">
+            <div class="card-header">
+              <span class="card-header-icon">📲</span>
+              <div class="card-header-text">
+                <h2 class="card-title">長輩 LINE 綁定邀請憑證</h2>
+                <p class="card-sub">使用手機 LINE 掃碼或開啟 Mini App 一鍵配對</p>
+              </div>
+              <button id="regenInviteBtn" class="btn btn-outline btn-sm" title="重新產生新代碼">重新產生</button>
+            </div>
+            <div class="card-body qrcode-card-body">
+              <div class="pairing-box">
+                <div id="qrcodeWrap" class="qrcode-container">
+                  <img id="pairingQrcodeImg" src="" alt="長輩專屬綁定 QR Code" class="pairing-qrcode" />
+                </div>
+                <div class="pairing-text-col">
+                  <span class="code-title">專屬 6 碼邀請代碼</span>
+                  <div class="invite-code-pill">
+                    <span id="inviteCodeDisplay">SP-8823</span>
+                    <button id="copyInviteBtn" class="btn-copy-code" title="複製邀請代碼">📋</button>
+                  </div>
+                  <p class="code-instruction">長輩打開 LINE 掃描左側條碼，或於手機打開銀髮守護 Mini App 輸入上方代碼，即刻完成雙向綁定！</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Middle Section: Gemini API Key & AI Perception -->
+        <div class="guardian-full-col">
+          <section class="dash-card">
+            <div class="card-header">
+              <span class="card-header-icon">🤖</span>
+              <div class="card-header-text">
+                <h2 class="card-title">子女專用 Gemini API Key 設定中心</h2>
+                <p class="card-sub">驅動長輩端「自然語音問路」、「相機看站牌」與「看藥袋醫囑」之多模態 AI 引擎</p>
+              </div>
+              <span id="geminiStatusPill" class="status-pill-ok">🟢 已連線啟用</span>
+            </div>
+            <div class="card-body">
+              <div class="gemini-input-group">
+                <input type="password" id="geminiApiKeyInput" class="gemini-key-input" placeholder="貼上您的 Google Gemini API Key (AI Studio 申請)" />
+                <button id="testGeminiBtn" class="btn btn-outline">驗證連線</button>
+                <button id="saveGeminiBtn" class="btn btn-primary">儲存金鑰</button>
+              </div>
+              <p class="gemini-help-text">
+                💡 費用由家屬自行代管，長者在 LINE 端完全免負擔且不需註冊。申請免費金鑰請至
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-link">Google AI Studio</a>。
+              </p>
+            </div>
+          </section>
+        </div>
+
+        <!-- Main Section: Saved Locations & Photo Library -->
+        <div class="guardian-full-col">
+          <section class="dash-card">
+            <div class="card-header">
+              <span class="card-header-icon">🖼️</span>
+              <div class="card-header-text">
+                <h2 class="card-title">長輩常用地點與照片圖資庫 (首頁特大卡片)</h2>
+                <p class="card-sub">此處設定之地點與生活照片，將直接同步成為長輩手機 LINE Mini App 首頁的大方塊按鍵！</p>
+              </div>
+              <button id="addLocationBtn" class="btn btn-primary btn-sm">+ 新增常用地點</button>
+            </div>
+            <div class="card-body">
+              <div id="locationsGrid" class="locations-grid">
+                <!-- Location Cards injected by guardian.ts -->
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Bottom Section: Trip Logs & Alerts History -->
+        <div class="guardian-full-col">
+          <section class="dash-card">
+            <div class="card-header">
+              <span class="card-header-icon">📋</span>
+              <div class="card-header-text">
+                <h2 class="card-title">長輩外出行程與安全通報日誌</h2>
+                <p class="card-sub">長者出發、抵達醫院、平安回家或觸發 SOS 警報之即時紀錄</p>
+              </div>
+              <button id="refreshLogsBtn" class="btn btn-outline btn-sm">刷新日誌</button>
+            </div>
+            <div class="card-body">
+              <div id="tripLogsTimeline" class="trip-logs-timeline">
+                <!-- Trip Logs injected by guardian.ts -->
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <!-- Auth Modal -->
+      <div id="authModal" class="guardian-modal" style="display: none;">
+        <div class="modal-overlay" id="authModalOverlay"></div>
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3 id="authModalTitle" class="modal-title">家屬帳號登入 / 註冊</h3>
+            <button id="closeAuthModalBtn" class="modal-close">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="auth-tabs">
+              <button id="tabLogin" class="auth-tab-btn active">登入帳號</button>
+              <button id="tabRegister" class="auth-tab-btn">註冊新帳號</button>
+            </div>
+            <form id="authForm" class="auth-form">
+              <div class="form-field">
+                <label>電子郵件 (Email)</label>
+                <input type="email" id="authEmailInput" required placeholder="name@example.com" />
+              </div>
+              <div class="form-field">
+                <label>密碼 (Password)</label>
+                <input type="password" id="authPasswordInput" required placeholder="至少 6 位密碼" />
+              </div>
+              <div class="form-field" id="registerNameField" style="display: none;">
+                <label>您的姓名 (稱呼)</label>
+                <input type="text" id="authNameInput" placeholder="例如：王小明" />
+              </div>
+              <button type="submit" id="authSubmitBtn" class="btn btn-primary btn-block">登入</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add / Edit Location Modal -->
+      <div id="locModal" class="guardian-modal" style="display: none;">
+        <div class="modal-overlay" id="locModalOverlay"></div>
+        <div class="modal-card modal-lg">
+          <div class="modal-header">
+            <h3 id="locModalTitle" class="modal-title">新增長輩常用地點與照片</h3>
+            <button id="closeLocModalBtn" class="modal-close">✕</button>
+          </div>
+          <div class="modal-body">
+            <form id="locForm" class="loc-form-grid">
+              <div class="form-field">
+                <label>地點類別</label>
+                <select id="locCategorySelect" required>
+                  <option value="home">🏠 家 (主要住處)</option>
+                  <option value="hospital">🏥 看醫生 (醫院/常看診間)</option>
+                  <option value="family">👨‍👩‍👧 親友家 (子女住所)</option>
+                  <option value="market">🥬 菜市場 / 超市</option>
+                  <option value="custom">📍 自訂常去地點</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>地點顯示名稱</label>
+                <input type="text" id="locNameInput" required placeholder="例如：家 (士林住處)、台北榮總" />
+              </div>
+              <div class="form-field full-width">
+                <label>詳細地址門牌</label>
+                <input type="text" id="locAddressInput" required placeholder="例如：台北市北投區石牌路二段201號" />
+              </div>
+              <div class="form-field">
+                <label>緯度 (Latitude)</label>
+                <input type="number" step="0.000001" id="locLatInput" required placeholder="25.1206" />
+              </div>
+              <div class="form-field">
+                <label>經度 (Longitude)</label>
+                <input type="number" step="0.000001" id="locLonInput" required placeholder="121.5196" />
+              </div>
+              <div class="form-field full-width">
+                <label>生活實景或親友照片 (URL / 支援相片庫)</label>
+                <input type="url" id="locPhotoUrlInput" placeholder="https://example.com/family-photo.jpg (長者端首頁按鍵封面)" />
+              </div>
+              <div class="form-field full-width">
+                <label>長輩口語別名 (逗號分隔，長者說話自動對照)</label>
+                <input type="text" id="locAliasesInput" placeholder="例如：看醫生, 榮總, 拿藥, 石牌" />
+              </div>
+              <div class="form-actions full-width">
+                <button type="button" id="cancelLocBtn" class="btn btn-outline">取消</button>
+                <button type="submit" class="btn btn-primary">儲存地點</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="guardian-footer">
+        <p>交通部 TDX 運輸資料流通服務 • 多模態 AI 銀髮出行守護員專案平台</p>
+        <p class="footer-meta">由家屬安心代管，長輩零認知負擔 • Supabase + Gemini 2.5 Flash 驅動</p>
+      </footer>
+    </div>
+
+    <!-- Script Entrypoint -->
+    <script type="module" src="/src/guardian.ts"></script>
+  </body>
+</html>

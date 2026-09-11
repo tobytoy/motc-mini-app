@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>銀髮出行守護員 | LINE Mini App</title>
+    <meta name="description" content="銀髮出行守護員 - 長輩專屬極簡出行伴侶：一鍵回家、看醫生、大照片常去地點、語音問路與看藥袋。" />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Plus+Jakarta+Sans:wght@700&display=swap" rel="stylesheet" />
+    <!-- App CSS -->
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body class="silver-body">
+    <div class="silver-app-container">
+      <!-- Elder Top Greeting Header -->
+      <header class="silver-header">
+        <div class="silver-greeting-row">
+          <div class="silver-avatar">👴</div>
+          <div class="silver-title-col">
+            <h1 id="silverElderName" class="silver-elder-name">王爸爸，您好！</h1>
+            <p id="silverWeatherPrompt" class="silver-weather-sub">今天天氣舒適 🌤️ 出門散步很舒服喔！</p>
+          </div>
+          <div class="silver-guardian-tag" id="silverGuardianBadge">
+            <span class="guardian-dot"></span>
+            <span id="silverGuardianName">小明 守護中</span>
+          </div>
+        </div>
+        
+        <!-- Current Location Indicator Bar -->
+        <div class="silver-location-strip">
+          <span class="strip-pin">📍</span>
+          <span id="silverCurrentLocationText" class="strip-loc-name">正在取得目前位置...</span>
+          <button id="silverRelocateBtn" class="strip-refresh-btn" title="重新整理位置">🔄</button>
+        </div>
+      </header>
+
+      <!-- Main Senior Actions -->
+      <main class="silver-main">
+        <!-- Giant Action Blocks: Home, Hospital, SOS -->
+        <section class="giant-actions-grid">
+          <!-- Button 1: 一鍵回家 -->
+          <button id="btnGoHome" class="giant-btn btn-home" aria-label="一鍵搭車回家">
+            <div class="giant-btn-left">
+              <span class="giant-icon">🏠</span>
+              <div class="giant-text-col">
+                <span class="giant-title">一鍵回家</span>
+                <span id="homeSubText" class="giant-desc">士林住處 • 推薦直達低地板公車</span>
+              </div>
+            </div>
+            <span class="giant-arrow">➔</span>
+          </button>
+
+          <!-- Button 2: 看醫生 -->
+          <button id="btnGoHospital" class="giant-btn btn-hospital" aria-label="看醫生直接導引">
+            <div class="giant-btn-left">
+              <span class="giant-icon">🏥</span>
+              <div class="giant-text-col">
+                <span class="giant-title">看醫生</span>
+                <span id="hospitalSubText" class="giant-desc">台北榮總 • 第一門診 (避階梯路線)</span>
+              </div>
+            </div>
+            <span class="giant-arrow">➔</span>
+          </button>
+
+          <!-- Button 3: SOS 緊急求救 -->
+          <button id="btnSos" class="giant-btn btn-sos" aria-label="緊急求救長按三秒">
+            <div class="giant-btn-left">
+              <span class="giant-icon">🚨</span>
+              <div class="giant-text-col">
+                <span class="giant-title">緊急求救 (SOS)</span>
+                <span class="giant-desc">迷路或不舒服長按 3 秒 • 即傳地址給家人</span>
+              </div>
+            </div>
+            <span id="sosCountdownText" class="sos-badge-tag">長按</span>
+          </button>
+        </section>
+
+        <!-- Familiar Photo Location Cards -->
+        <section class="silver-section">
+          <div class="section-title-row">
+            <span class="sec-emoji">🖼️</span>
+            <h2 class="sec-title">家人為您準備的常用地點：</h2>
+          </div>
+          <div id="silverPhotoGrid" class="silver-photo-grid">
+            <!-- Dynamic Photo Cards Injected by silver.ts -->
+          </div>
+        </section>
+
+        <!-- AI Voice & Camera Multi-Modal Tool Bar -->
+        <section class="silver-ai-bar">
+          <!-- Voice Ask Button -->
+          <button id="btnVoiceAsk" class="ai-tool-btn btn-voice">
+            <span class="ai-tool-icon">🎙️</span>
+            <div class="ai-tool-text">
+              <span class="ai-tool-title">開口問路</span>
+              <span class="ai-tool-sub">說「307公車多久來？」</span>
+            </div>
+          </button>
+
+          <!-- Camera Visual Reader Button -->
+          <button id="btnCameraRead" class="ai-tool-btn btn-camera">
+            <span class="ai-tool-icon">📷</span>
+            <div class="ai-tool-text">
+              <span class="ai-tool-title">拍照看路/看藥袋</span>
+              <span class="ai-tool-sub">對準站牌或藥袋隨手拍</span>
+            </div>
+          </button>
+        </section>
+      </main>
+
+      <!-- Navigation Transit Modal (Large Fonts) -->
+      <div id="transitModal" class="silver-modal" style="display: none;">
+        <div class="silver-modal-overlay" id="transitModalOverlay"></div>
+        <div class="silver-modal-sheet">
+          <div class="sheet-header">
+            <div class="sheet-title-box">
+              <span id="transitDestIcon" class="sheet-icon">🏠</span>
+              <h3 id="transitDestTitle" class="sheet-title">前往目的地</h3>
+            </div>
+            <button id="closeTransitModalBtn" class="sheet-close-btn">✕ 關閉</button>
+          </div>
+          <div class="sheet-body">
+            <div id="transitRecommendation" class="transit-recommendation-box">
+              <div class="rec-badge">🌟 最省力直達推薦 (符合輔具偏好)</div>
+              <h4 id="recBusLine" class="rec-bus-title">搭乘 508 路公車 (低地板)</h4>
+              <p id="recBusStop" class="rec-bus-desc">步行 80 公尺至「士林國中站」上車，約 3 分鐘後進站</p>
+              <div class="rec-reminder-box">
+                <span class="remind-icon">🔔</span>
+                <span class="remind-text">下車前兩站手機會主動震動並大聲提醒，請長輩安心坐好，不用急著站起來！</span>
+              </div>
+            </div>
+
+            <div class="sheet-action-row">
+              <a id="transitNavBtn" href="#" target="_blank" class="silver-action-btn btn-primary-giant">
+                <span>🧭 開啟大字導航 (Google Maps)</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Voice Interaction Modal -->
+      <div id="voiceModal" class="silver-modal" style="display: none;">
+        <div class="silver-modal-overlay" id="voiceModalOverlay"></div>
+        <div class="silver-modal-sheet">
+          <div class="sheet-header">
+            <h3 class="sheet-title">🎙️ 語音問路陪伴員</h3>
+            <button id="closeVoiceModalBtn" class="sheet-close-btn">✕</button>
+          </div>
+          <div class="sheet-body text-center">
+            <div id="voicePulseCircle" class="voice-pulse-circle">
+              <span class="mic-icon">🎙️</span>
+            </div>
+            <p id="voiceStatusText" class="voice-status-text">請直接說話，例如：「我要去榮總」或「公車還有多久？」</p>
+            <div id="voiceResultBox" class="voice-result-box" style="display: none;">
+              <p id="voiceAnswerText" class="voice-answer-text">正在查詢 TDX 即時到站動態...</p>
+            </div>
+            <button id="voiceListenAgainBtn" class="btn btn-primary btn-block mt-3" style="display: none;">再問一次</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Camera Modal -->
+      <div id="cameraModal" class="silver-modal" style="display: none;">
+        <div class="silver-modal-overlay" id="cameraModalOverlay"></div>
+        <div class="silver-modal-sheet">
+          <div class="sheet-header">
+            <h3 class="sheet-title">📷 智慧看路 ＆ 藥袋朗讀</h3>
+            <button id="closeCameraModalBtn" class="sheet-close-btn">✕</button>
+          </div>
+          <div class="sheet-body">
+            <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;" />
+            <div class="camera-trigger-box" id="cameraTriggerBox">
+              <span class="cam-icon">📸</span>
+              <p class="cam-text">點擊打開手機相機拍照</p>
+              <span class="cam-sub">支援看路邊站牌、建築招牌、醫院藥袋</span>
+            </div>
+            <div id="cameraResultWrap" class="camera-result-wrap" style="display: none;">
+              <img id="cameraPreviewImg" src="" alt="拍攝預覽" class="camera-preview-thumb" />
+              <div id="cameraAiResponse" class="camera-ai-response">
+                <p id="cameraLoadingText" class="camera-loading-text">AI 正在辨識實景中...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pairing Code Modal (First Time Binding) -->
+      <div id="pairModal" class="silver-modal" style="display: none;">
+        <div class="silver-modal-overlay"></div>
+        <div class="silver-modal-card">
+          <div class="pair-card-header">
+            <span class="pair-icon">📲</span>
+            <h3>守護員配對綁定</h3>
+          </div>
+          <p class="pair-desc">請輸入子女在電腦端為您產出的 6 碼邀請代碼（例如 SP-8823）：</p>
+          <div class="pair-input-row">
+            <input type="text" id="pairCodeInput" class="pair-input" placeholder="SP-XXXX" maxlength="10" />
+            <button id="submitPairBtn" class="btn btn-primary">確認綁定</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Elder Footer -->
+      <footer class="silver-footer">
+        <p>銀髮出行守護員 • 交通部 TDX 即時大眾運輸 ＆ Gemini 多模態 AI 守護</p>
+        <p class="silver-footer-sub">LINE Mini App • motc-mini-silver</p>
+      </footer>
+    </div>
+
+    <!-- Script Entrypoint -->
+    <script type="module" src="/src/silver.ts"></script>
+  </body>
+</html>
