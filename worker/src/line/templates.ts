@@ -483,7 +483,7 @@ export function createMiniAppFlexMessage(
  */
 export function createAllInclusiveProjectsFlexMessage(
   displayName?: string,
-  demoAppUrl: string = "https://ai.studio/apps/1d7b8b11-885e-4bcd-947e-a77325ac06f6?fullscreenApplet=true"
+  demoAppUrl: string = "https://miniapp.line.me/2011556606-KbygvdxR"
 ): OutgoingLineMessage {
   const contents = {
     type: "bubble",

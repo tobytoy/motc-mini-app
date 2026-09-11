@@ -299,7 +299,7 @@ function updateSeniorUI(): void {
 }
 
 function renderQrcode(): void {
-  const inviteUrl = `https://motc-mini-dog.pages.dev/silver?invite=${state.senior.inviteCode}`;
+  const inviteUrl = `https://miniapp.line.me/2011556606-KbygvdxR?invite=${state.senior.inviteCode}`;
   // High-reliability QuickChart SVG QR code generator
   const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(inviteUrl)}&size=200&dark=0f172a`;
   DOM.pairingQrcodeImg.src = qrUrl;

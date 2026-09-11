@@ -6,7 +6,7 @@ import type { SavedLocation, SeniorProfile } from "./guardian";
 // ==========================================
 
 const CONFIG = {
-  LIFF_ID: "2011551329-VWljb6fv", // Developing LIFF ID
+  LIFF_ID: "2011556606-KbygvdxR", // motc-senior-care Developing LIFF ID
   DEFAULT_LAT: 25.0938, // 預設士林住處
   DEFAULT_LON: 121.5262,
 };
