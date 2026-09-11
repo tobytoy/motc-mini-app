@@ -88,8 +88,14 @@ const CONFIG = {
   LIFF_ID: "2011551329-VWljb6fv", // motc-mini-eagle-eye Developing LIFF ID
   DEFAULT_LAT: 25.0478, // 台北車站
   DEFAULT_LON: 121.5170,
+  CARTO_KEY: "cb1_34ly_1_0922d1c895d7b40fd9f335f0",
 };
 
+function getCartoTileUrl(theme: string): string {
+  return theme === "dark"
+    ? `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${CONFIG.CARTO_KEY}`
+    : `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${CONFIG.CARTO_KEY}`;
+}
 type FilterMode = "all" | "hotspot" | "event" | "cctv";
 
 interface AppState {
@@ -106,6 +112,7 @@ interface AppState {
   } | null;
   voiceAlertEnabled: boolean;
   activeCctvInterval: number | null;
+  tileLayer: L.TileLayer | null;
 }
 
 const state: AppState = {
@@ -118,8 +125,8 @@ const state: AppState = {
   layers: null,
   voiceAlertEnabled: true,
   activeCctvInterval: null,
+  tileLayer: null,
 };
-
 // ==========================================
 // DOM References
 // ==========================================
@@ -185,6 +192,9 @@ function initTheme(): void {
     localStorage.setItem("theme", next);
     document.cookie = `theme=${next}; path=/; max-age=31536000; SameSite=Lax`;
     updateThemeIcon(next);
+    if (state.tileLayer) {
+      state.tileLayer.setUrl(getCartoTileUrl(next));
+    }
   });
 }
 
@@ -228,10 +238,11 @@ function initMap(): void {
   }).setView([state.currentLat, state.currentLon], 14);
 
   L.control.zoom({ position: "bottomright" }).addTo(state.map);
-  // CartoDB Dark/Light Basemap
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+  const initialTheme = document.documentElement.getAttribute("data-theme") || "dark";
+  state.tileLayer = L.tileLayer(getCartoTileUrl(initialTheme), {
     attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
     maxZoom: 19,
+    subdomains: "abcd",
   }).addTo(state.map);
 
   // User pulse marker
