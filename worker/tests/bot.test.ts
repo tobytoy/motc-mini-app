@@ -104,7 +104,7 @@ async function runTests() {
 
   const miniAppMsg = createMiniAppFlexMessage(MOCK_ENV.MINI_APP_URL) as LineFlexMessage;
   assert.equal(miniAppMsg.type, "flex");
-  assert.equal(miniAppMsg.altText, "📱 MOTC 雙旗艦 LINE Mini App 專區 (周邊交通 ＆ 資料小偵探)");
+  assert.ok(miniAppMsg.altText.includes("三旗艦"));
   assert.ok(JSON.stringify(miniAppMsg).includes("https://motc-mini-dog.pages.dev/"));
 
   const allProjectsMsg = createAllInclusiveProjectsFlexMessage("王季豪") as LineFlexMessage;

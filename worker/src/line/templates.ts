@@ -14,24 +14,16 @@ export const BOT_QUICK_REPLY: LineQuickReply = {
       type: "action",
       action: {
         type: "message",
-        label: "🕵️‍♂️ API 偵探",
+        label: "🦅 路安鷹眼",
+        text: "/eagle"
+      }
+    },
+    {
+      type: "action",
+      action: {
+        type: "message",
+        label: "🕵️‍♂️ 資料偵探",
         text: "/search"
-      }
-    },
-    {
-      type: "action",
-      action: {
-        type: "message",
-        label: "💻 專案大廳",
-        text: "/project"
-      }
-    },
-    {
-      type: "action",
-      action: {
-        type: "message",
-        label: "🧓 銀髮守護(預覽)",
-        text: "/銀髮守護"
       }
     },
     {
@@ -45,7 +37,7 @@ export const BOT_QUICK_REPLY: LineQuickReply = {
       type: "action",
       action: {
         type: "message",
-        label: "💬 意見建議",
+        label: "💬 意見回報",
         text: "/意見"
       }
     },
@@ -302,7 +294,7 @@ export function createTdxFlexMessage(tdxUrl: string = "https://tdx.transportdata
 export function createMiniAppFlexMessage(
   miniAppUrl: string = "https://motc-mini-dog.pages.dev/",
   detectiveLiffUrl: string = "https://miniapp.line.me/2011521041-JnfPdXhF",
-  formUrl: string = "https://docs.google.com/forms/d/e/1FAIpQLSd84pIjXoYOYO8qAodE6mI-aBfPyMuXoabBWHsw_g2Lu_u6Eg/viewform"
+  eagleEyeLiffUrl: string = "https://miniapp.line.me/2011551329-VWljb6fv"
 ): OutgoingLineMessage {
   const contents = {
     type: "bubble",
@@ -310,19 +302,19 @@ export function createMiniAppFlexMessage(
     header: {
       type: "box",
       layout: "vertical",
-      backgroundColor: "#0D9488",
+      backgroundColor: "#0F766E",
       paddingAll: "xl",
       contents: [
         {
           type: "text",
-          text: "📱 MOTC 雙旗艦 LINE Mini App",
+          text: "📱 MOTC 旗艦微應用專區",
           color: "#CCFBF1",
           size: "xs",
           weight: "bold"
         },
         {
           type: "text",
-          text: "智慧交通微應用專區",
+          text: "智慧交通三旗艦 Mini App",
           color: "#FFFFFF",
           size: "xl",
           weight: "bold",
@@ -330,7 +322,7 @@ export function createMiniAppFlexMessage(
         },
         {
           type: "text",
-          text: "專為手機打造 · 周邊交通即時助手 ＆ 資料查詢小偵探",
+          text: "專為手機打造 · 周邊交通 ＆ 路安鷹眼 ＆ 資料小偵探",
           color: "#99F6E4",
           size: "xs",
           margin: "xs"
@@ -362,14 +354,40 @@ export function createMiniAppFlexMessage(
             },
             {
               type: "text",
-              text: "• 🚲 YouBike 2.0/2.0E 車位即時借還\n• 🅿️ 路外停車場格位與充電樁資訊\n• 🚌 最近站牌各路線即時進站倒數\n• 🌤️ 氣象署降雨機率與出門帶傘指引",
+              text: "• 🚲 YouBike 2.0/2.0E 車位即時借還\n• 🅿️ 路外停車場即時格位與費率說明\n• 🚌 最近站牌各路線即時進站倒數\n• 🌤️ 氣象署降雨機率與出門帶傘決策",
               size: "xxs",
               color: "#334155",
               wrap: true
             }
           ]
         },
-        // Mini App 2: 資料查詢小偵探
+        // Mini App 2: 路安鷹眼雷達
+        {
+          type: "box",
+          layout: "vertical",
+          backgroundColor: "#F8FAFC",
+          cornerRadius: "md",
+          paddingAll: "md",
+          spacing: "xs",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "🦅 2. 路安鷹眼即時防禦雷達", size: "xs", weight: "bold", color: "#0284C7", flex: 8 },
+                { type: "text", text: "路況直擊", size: "xxs", color: "#38BDF8", align: "end", flex: 3 }
+              ]
+            },
+            {
+              type: "text",
+              text: "• 🚨 300 大易肇事熱點距離倒數警示\n• ⚡ TDX 即時車禍事故與車道封閉通報\n• 📹 669+ 支即時 CCTV 監視器畫面直擊\n• 🔊 接近危險路段語音主動警報提醒",
+              size: "xxs",
+              color: "#334155",
+              wrap: true
+            }
+          ]
+        },
+        // Mini App 3: 資料查詢小偵探
         {
           type: "box",
           layout: "vertical",
@@ -382,25 +400,18 @@ export function createMiniAppFlexMessage(
               type: "box",
               layout: "horizontal",
               contents: [
-                { type: "text", text: "🕵️‍♂️ 2. 資料查詢小偵探", size: "xs", weight: "bold", color: "#4338CA", flex: 8 },
+                { type: "text", text: "🕵️‍♂️ 3. 資料查詢小偵探", size: "xs", weight: "bold", color: "#4338CA", flex: 8 },
                 { type: "text", text: "數據探勘", size: "xxs", color: "#6366F1", align: "end", flex: 3 }
               ]
             },
             {
               type: "text",
-              text: "• 🔍 全臺 TDX 738+ API 規格即時檢索\n• 🔥 百萬調用量熱門 API 精選推薦\n• 🆕 2026 最新發布交通開放資料集\n• 🎙️ 原生 Web Speech 語音輸入搜尋",
+              text: "• 🔍 全臺 TDX 738+ API 規格即時檢索\n• 🔥 百萬調用量熱門 API 精選推薦\n• 🎙️ 原生 Web Speech 語音輸入搜尋\n• 📋 一鍵複製完整 URL 與 cURL 指令",
               size: "xxs",
               color: "#334155",
               wrap: true
             }
           ]
-        },
-        {
-          type: "text",
-          text: "💡 提示：Mini App 專為手機端打造，目前處於封測階段，若尚未開通請點擊下方表單申請！",
-          size: "xxs",
-          color: "#94A3B8",
-          wrap: true
         }
       ]
     },
@@ -424,22 +435,23 @@ export function createMiniAppFlexMessage(
         {
           type: "button",
           style: "primary",
-          color: "#4F46E5",
+          color: "#0284C7",
           height: "sm",
           action: {
             type: "uri",
-            label: "🕵️‍♂️ 開啟資料查詢小偵探",
-            uri: detectiveLiffUrl
+            label: "🦅 開啟路安鷹眼雷達",
+            uri: eagleEyeLiffUrl
           }
         },
         {
           type: "button",
-          style: "secondary",
+          style: "primary",
+          color: "#4F46E5",
           height: "sm",
           action: {
             type: "uri",
-            label: "📝 申請測試資格開通",
-            uri: formUrl
+            label: "🕵️‍♂️ 開啟資料小偵探",
+            uri: detectiveLiffUrl
           }
         }
       ]
@@ -448,11 +460,12 @@ export function createMiniAppFlexMessage(
 
   return {
     type: "flex",
-    altText: "📱 MOTC 雙旗艦 LINE Mini App 專區 (周邊交通 ＆ 資料小偵探)",
+    altText: "📱 MOTC 三旗艦 LINE Mini App 專區 (周邊交通 ＆ 鷹眼雷達 ＆ 資料小偵探)",
     contents,
     quickReply: BOT_QUICK_REPLY
   };
 }
+
 
 /**
  * 3. 項目管理網頁可愛氣泡 Flex Message
@@ -1387,9 +1400,11 @@ export function createHelpFlexMessage(urls: {
   formUrl?: string;
   detectiveLiffUrl?: string;
   detectiveWebUrl?: string;
+  eagleEyeLiffUrl?: string;
+  eagleEyeWebUrl?: string;
 }): OutgoingLineMessage {
-  const formUrl = urls.formUrl || "https://docs.google.com/forms/d/e/1FAIpQLSd84pIjXoYOYO8qAodE6mI-aBfPyMuXoabBWHsw_g2Lu_u6Eg/viewform";
   const detectiveUrl = urls.detectiveLiffUrl || "https://miniapp.line.me/2011521041-JnfPdXhF";
+  const eagleEyeUrl = urls.eagleEyeLiffUrl || "https://miniapp.line.me/2011551329-VWljb6fv";
   const contents = {
     type: "bubble",
     size: "mega",
@@ -1401,14 +1416,14 @@ export function createHelpFlexMessage(urls: {
       contents: [
         {
           type: "text",
-          text: "📖 服務手冊與功能總覽",
+          text: "📖 服務指南與快捷目錄",
           color: "#FEF3C7",
           size: "xs",
           weight: "bold"
         },
         {
           type: "text",
-          text: "MOTC 助手使用指南",
+          text: "MOTC 智慧交通指南",
           color: "#FFFFFF",
           size: "xl",
           weight: "bold",
@@ -1416,7 +1431,7 @@ export function createHelpFlexMessage(urls: {
         },
         {
           type: "text",
-          text: "點擊下方快捷按鈕或輸入斜線指令輕鬆查詢",
+          text: "點擊下方快捷按鈕輕鬆開啟三大旗艦服務",
           color: "#FDE68A",
           size: "xs",
           margin: "xs"
@@ -1431,14 +1446,14 @@ export function createHelpFlexMessage(urls: {
       contents: [
         {
           type: "text",
-          text: "您好！我是交通部科資司智慧小助手 🐾✨",
+          text: "您好！我是交通部智慧交通小助手 🐾✨",
           weight: "bold",
           size: "sm",
           color: "#B45309"
         },
         {
           type: "text",
-          text: "整合 TDX 即時交通、氣象動態與 24 大專案平台，為您提供一站式交通與研發指引服務。",
+          text: "整合全台 TDX 交通聯網、CWA 氣象即時動態與公路路網，為您提供三大即時出行與資料微應用：",
           size: "xs",
           color: "#475569",
           wrap: true
@@ -1449,7 +1464,7 @@ export function createHelpFlexMessage(urls: {
         },
         {
           type: "text",
-          text: "🚦 常用快捷功能指引：",
+          text: "🌟 三大旗艦 Mini App 服務：",
           weight: "bold",
           size: "xs",
           color: "#334155"
@@ -1464,7 +1479,15 @@ export function createHelpFlexMessage(urls: {
               layout: "horizontal",
               contents: [
                 { type: "text", text: "🚦 /app", size: "xs", weight: "bold", color: "#0D9488", flex: 4 },
-                { type: "text", text: "周邊交通 (YouBike/車位/公車)", size: "xxs", color: "#64748B", flex: 6 }
+                { type: "text", text: "周邊交通即時資訊 (車位/公車/天氣)", size: "xxs", color: "#64748B", flex: 6 }
+              ]
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "🦅 /eagle", size: "xs", weight: "bold", color: "#0284C7", flex: 4 },
+                { type: "text", text: "路安鷹眼雷達 (事故熱點/CCTV直擊)", size: "xxs", color: "#64748B", flex: 6 }
               ]
             },
             {
@@ -1472,31 +1495,33 @@ export function createHelpFlexMessage(urls: {
               layout: "horizontal",
               contents: [
                 { type: "text", text: "🕵️‍♂️ /search", size: "xs", weight: "bold", color: "#4F46E5", flex: 4 },
-                { type: "text", text: "資料小偵探 (TDX 738+ API)", size: "xxs", color: "#64748B", flex: 6 }
+                { type: "text", text: "資料小偵探 (TDX 738+ API 探勘)", size: "xxs", color: "#64748B", flex: 6 }
               ]
-            },
+            }
+          ]
+        },
+        {
+          type: "separator",
+          color: "#E2E8F0"
+        },
+        {
+          type: "text",
+          text: "📌 常用輔助指令：",
+          weight: "bold",
+          size: "xs",
+          color: "#334155"
+        },
+        {
+          type: "box",
+          layout: "vertical",
+          spacing: "xs",
+          contents: [
             {
               type: "box",
               layout: "horizontal",
               contents: [
-                { type: "text", text: "💻 /project", size: "xs", weight: "bold", color: "#7C3AED", flex: 4 },
-                { type: "text", text: "24 大專案大廳 (11公開+13內部)", size: "xxs", color: "#64748B", flex: 6 }
-              ]
-            },
-            {
-              type: "box",
-              layout: "horizontal",
-              contents: [
-                { type: "text", text: "🧓 /銀髮守護", size: "xs", weight: "bold", color: "#D97706", flex: 4 },
-                { type: "text", text: "高齡交通關懷 (早期 PoC 階段)", size: "xxs", color: "#D97706", flex: 6 }
-              ]
-            },
-            {
-              type: "box",
-              layout: "horizontal",
-              contents: [
-                { type: "text", text: "🚍 /tdx", size: "xs", weight: "bold", color: "#0284C7", flex: 4 },
-                { type: "text", text: "交通資料流通服務 TDX 官網", size: "xxs", color: "#64748B", flex: 6 }
+                { type: "text", text: "📍 傳送位置", size: "xs", weight: "bold", color: "#0284C7", flex: 4 },
+                { type: "text", text: "GPS 自動查找方圓設施與防禦雷達", size: "xxs", color: "#64748B", flex: 6 }
               ]
             },
             {
@@ -1504,15 +1529,7 @@ export function createHelpFlexMessage(urls: {
               layout: "horizontal",
               contents: [
                 { type: "text", text: "💬 /意見", size: "xs", weight: "bold", color: "#EC4899", flex: 4 },
-                { type: "text", text: "意見回覆 (自動帶入單號與身分)", size: "xxs", color: "#64748B", flex: 6 }
-              ]
-            },
-            {
-              type: "box",
-              layout: "horizontal",
-              contents: [
-                { type: "text", text: "📝 /申請", size: "xs", weight: "bold", color: "#D97706", flex: 4 },
-                { type: "text", text: "內部同仁開通登記表單", size: "xxs", color: "#64748B", flex: 6 }
+                { type: "text", text: "意見回覆單 (自動綁定單號與身分)", size: "xxs", color: "#64748B", flex: 6 }
               ]
             }
           ]
@@ -1538,7 +1555,7 @@ export function createHelpFlexMessage(urls: {
             },
             {
               type: "text",
-              text: "• 點選下方「快捷按鈕」即可一鍵查詢，免手動打字！\n• 私聊或群組中指令需加「/」開頭（如 /app、/project），避免打擾日常交談 💤\n• 點擊「📍 傳送位置」可自動查找方圓 1 公里內交通設施。",
+              text: "• 點選下方「快捷按鈕」即可一鍵查詢，免手動打字！\n• 私聊或群組中指令需加「/」開頭（如 /app、/eagle），避免打擾日常交談 💤",
               size: "xxs",
               color: "#92400E",
               wrap: true
@@ -1556,12 +1573,23 @@ export function createHelpFlexMessage(urls: {
         {
           type: "button",
           style: "primary",
-          color: "#D97706",
+          color: "#0D9488",
           height: "sm",
           action: {
             type: "uri",
             label: "🚦 開啟周邊交通助手",
             uri: urls.miniAppUrl
+          }
+        },
+        {
+          type: "button",
+          style: "primary",
+          color: "#0284C7",
+          height: "sm",
+          action: {
+            type: "uri",
+            label: "🦅 開啟路安鷹眼雷達",
+            uri: eagleEyeUrl
           }
         },
         {
@@ -1573,16 +1601,6 @@ export function createHelpFlexMessage(urls: {
             type: "uri",
             label: "🕵️‍♂️ 開啟資料查詢小偵探",
             uri: detectiveUrl
-          }
-        },
-        {
-          type: "button",
-          style: "secondary",
-          height: "sm",
-          action: {
-            type: "message",
-            label: "💻 查看 24 大專案大廳",
-            text: "/project"
           }
         }
       ]
