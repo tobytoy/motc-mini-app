@@ -159,8 +159,7 @@ export async function processLineEvent(event: LineEvent, env: Env): Promise<void
           break;
 
         case "help":
-          // Fallback to self-introduction and command list
-          await lineClient.reply(replyToken, createWhoAreYouFlexMessage(urlBundle));
+          await lineClient.reply(replyToken, createHelpFlexMessage(urlBundle));
           break;
       }
     }

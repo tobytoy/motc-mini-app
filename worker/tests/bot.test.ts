@@ -161,6 +161,9 @@ async function runTests() {
     projectUrl: MOCK_ENV.PROJECT_MGMT_URL!
   }) as LineFlexMessage;
   assert.equal(helpMsg.type, "flex");
+  assertValidFlex(helpMsg);
+  assertValidFlex(whoMsg);
+  assertValidFlex(formMsg);
   const detectiveMsg = createDetectiveFlexMessage("https://miniapp.line.me/2011521041-JnfPdXhF", "https://motc-mini-dog.pages.dev/search") as LineFlexMessage;
   assert.equal(detectiveMsg.type, "flex");
   assert.equal(detectiveMsg.altText, "🕵️‍♂️ 資料查詢小偵探 (TDX 738+ API 探勘)");
