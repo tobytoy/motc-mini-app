@@ -154,6 +154,7 @@ const DOM = {
   cctvPlayerLoader: document.getElementById("cctvPlayerLoader") as HTMLElement,
   cctvRefreshIndicator: document.getElementById("cctvRefreshIndicator") as HTMLElement,
   cctvNavBtn: document.getElementById("cctvNavBtn") as HTMLAnchorElement,
+  cctvDirectStreamBtn: document.getElementById("cctvDirectStreamBtn") as HTMLAnchorElement,
 };
 
 // ==========================================
@@ -222,10 +223,11 @@ function initMap(): void {
   if (!mapEl) return;
 
   state.map = L.map("radarMap", {
-    zoomControl: true,
-    attributionControl: true,
+    zoomControl: false,
+    attributionControl: false,
   }).setView([state.currentLat, state.currentLon], 14);
 
+  L.control.zoom({ position: "bottomright" }).addTo(state.map);
   // CartoDB Dark/Light Basemap
   L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
     attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
@@ -481,25 +483,35 @@ function renderCards(data: EagleEyeApiResponse, mode: FilterMode): void {
           </div>
           <span class="card-distance">${formatDistance(cctv.distanceMeters)}</span>
         </div>
-        <div class="cctv-thumb-wrap">
-          <img src="${cctv.snapshotUrl}" alt="${cctv.name}" class="cctv-thumb-img" loading="lazy" />
-          <span class="thumb-live-tag">🔴 點擊看實況</span>
-        </div>
-        <h3 class="card-title">${cctv.name}</h3>
-        <p class="card-address">區域：${cctv.region} ${cctv.mileage ? `(${cctv.mileage})` : ""}</p>
-        <div class="card-footer-row">
-          <button class="btn btn-primary btn-sm open-cctv-btn" data-cctv-id="${cctv.id}">
-            <span>📹 查看即時影像</span>
+        <div class="cctv-card-hero">
+          <div class="cctv-hero-left">
+            <span class="cctv-hero-icon">📹</span>
+            <div class="cctv-hero-info">
+              <div class="cctv-online-indicator">
+                <span class="pulse-beacon"></span>
+                <span>${cctv.status === "online" ? "即時鏡頭在線 (點擊調閱)" : "監視器待命"}</span>
+              </div>
+              <span class="cctv-hero-sub">${cctv.locationName || cctv.roadName} ${cctv.mileage ? `(${cctv.mileage})` : ""}</span>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm cctv-hero-btn open-cctv-btn" data-cctv-id="${cctv.id}">
+            <span>▶️ 直擊畫面</span>
           </button>
+        </div>
+        <div class="card-footer-row">
+          <span class="card-address">區域：${cctv.region} • 距離約 ${formatDistance(cctv.distanceMeters)}</span>
         </div>
       `;
       const btn = card.querySelector(".open-cctv-btn");
       if (btn) {
-        btn.addEventListener("click", () => openCctvModal(cctv));
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openCctvModal(cctv);
+        });
       }
-      const thumb = card.querySelector(".cctv-thumb-wrap");
-      if (thumb) {
-        thumb.addEventListener("click", () => openCctvModal(cctv));
+      const hero = card.querySelector(".cctv-card-hero");
+      if (hero) {
+        hero.addEventListener("click", () => openCctvModal(cctv));
       }
       container.appendChild(card);
     });
@@ -533,6 +545,9 @@ function openCctvModal(cctv: CCTVItem): void {
   DOM.cctvImagePlayer.style.display = "none";
 
   DOM.cctvNavBtn.href = `https://www.google.com/maps/dir/?api=1&destination=${cctv.lat},${cctv.lon}`;
+  if (DOM.cctvDirectStreamBtn) {
+    DOM.cctvDirectStreamBtn.href = cctv.videoUrl;
+  }
 
   // Start image stream refresh
   const refreshSnapshot = () => {
@@ -543,6 +558,18 @@ function openCctvModal(cctv: CCTVItem): void {
   DOM.cctvImagePlayer.onload = () => {
     DOM.cctvPlayerLoader.style.display = "none";
     DOM.cctvImagePlayer.style.display = "block";
+  };
+
+  DOM.cctvImagePlayer.onerror = () => {
+    DOM.cctvPlayerLoader.innerHTML = `
+      <div style="text-align:center; padding: 16px;">
+        <p style="color:#f59e0b; margin:0 0 8px 0; font-size:12px;">⚠️ 該路段串流受到安全策略或跨域限制</p>
+        <a href="${cctv.videoUrl}" target="_blank" class="btn btn-outline btn-sm" style="display:inline-flex;">
+          <span>🔗 點此在外部瀏覽器開啟</span>
+        </a>
+      </div>
+    `;
+    DOM.cctvPlayerLoader.style.display = "block";
   };
 
   refreshSnapshot();

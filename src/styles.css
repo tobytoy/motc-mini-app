@@ -281,7 +281,7 @@ body {
   border-bottom: 1px solid var(--border-light);
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 1200;
   box-shadow: var(--shadow-sm);
 }
 
@@ -1912,11 +1912,24 @@ html[data-theme="dark"] .map-legend {
   width: 100%;
   height: 280px;
   border-radius: 12px;
-  overflow: hidden;
+  overflow: hidden !important;
+  contain: paint;
+  position: relative;
+  z-index: 10;
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 html[data-theme="dark"] .radar-map-container {
   border-color: rgba(255, 255, 255, 0.1);
+}
+
+.radar-map-container .leaflet-top,
+.radar-map-container .leaflet-bottom {
+  z-index: 40 !important;
+}
+.radar-map-container .leaflet-control-zoom {
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+  margin: 12px !important;
 }
 
 /* User Pulse Marker */
@@ -2195,31 +2208,67 @@ html[data-theme="dark"] .card-event-meta {
   margin-top: 4px;
 }
 
-/* CCTV Thumbnail Preview */
-.cctv-thumb-wrap {
-  position: relative;
-  width: 100%;
-  height: 160px;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #0f172a;
+/* CCTV Card Hero (On-demand preview, zero background network) */
+.cctv-card-hero {
+  background: rgba(6, 182, 212, 0.06);
+  border: 1px dashed rgba(6, 182, 212, 0.3);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
-.cctv-thumb-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.cctv-card-hero:hover {
+  background: rgba(6, 182, 212, 0.12);
+  border-color: rgba(6, 182, 212, 0.5);
 }
-.thumb-live-tag {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  background: rgba(0, 0, 0, 0.75);
-  color: #ffffff;
+.cctv-hero-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.cctv-hero-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+.cctv-hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.cctv-online-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 4px;
+  font-weight: 700;
+  color: #0891b2;
+}
+html[data-theme="dark"] .cctv-online-indicator {
+  color: #22d3ee;
+}
+.pulse-beacon {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  display: inline-block;
+}
+.cctv-hero-sub {
+  font-size: 11px;
+  color: #64748b;
+}
+html[data-theme="dark"] .cctv-hero-sub {
+  color: #94a3b8;
+}
+.cctv-hero-btn {
+  flex-shrink: 0;
 }
 
 /* CCTV Modal Viewer */

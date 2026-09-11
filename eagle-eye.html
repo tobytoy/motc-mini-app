@@ -154,10 +154,15 @@
             <div id="cctvPlayerLoader" class="cctv-player-loading">載入即時影像中...</div>
           </div>
           <div class="cctv-modal-footer">
-            <span id="cctvRefreshIndicator" class="cctv-refresh-tag">自動刷新中 (每 3 秒)</span>
-            <a id="cctvNavBtn" href="#" target="_blank" class="btn btn-primary btn-sm">
-              <span>🧭 前往該路段導航</span>
-            </a>
+            <span id="cctvRefreshIndicator" class="cctv-refresh-tag">即時影像連線中</span>
+            <div class="cctv-modal-actions">
+              <a id="cctvDirectStreamBtn" href="#" target="_blank" class="btn btn-outline btn-sm" title="若畫面無法顯示，可點此在外部瀏覽器直接播放">
+                <span>🔗 另開原始串流</span>
+              </a>
+              <a id="cctvNavBtn" href="#" target="_blank" class="btn btn-primary btn-sm">
+                <span>🧭 前往路段導航</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
