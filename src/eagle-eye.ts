@@ -91,10 +91,9 @@ const CONFIG = {
   CARTO_KEY: "cb1_34ly_1_0922d1c895d7b40fd9f335f0",
 };
 
-function getCartoTileUrl(theme: string): string {
-  return theme === "dark"
-    ? `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${CONFIG.CARTO_KEY}`
-    : `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${CONFIG.CARTO_KEY}`;
+function getCartoTileUrl(_theme?: string): string {
+  // CARTO Voyager: 亮色高清圖磚，道路標記與地標鮮明對比，無暗黑感
+  return `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${CONFIG.CARTO_KEY}`;
 }
 type FilterMode = "all" | "hotspot" | "event" | "cctv";
 
@@ -183,7 +182,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 // ==========================================
 
 function initTheme(): void {
-  const saved = localStorage.getItem("theme") || "dark";
+  const saved = localStorage.getItem("theme") || "light";
   document.documentElement.setAttribute("data-theme", saved);
   updateThemeIcon(saved);
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-theme="dark">
+<html lang="zh-TW" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
@@ -13,7 +13,7 @@
         try {
           var cookieMatch = document.cookie.match(/(?:^|;\s*)theme=([^;]+)/);
           var saved = cookieMatch ? cookieMatch[1] : localStorage.getItem("theme");
-          var theme = saved || "dark";
+          var theme = saved || "light";
           document.documentElement.setAttribute("data-theme", theme);
         } catch (e) {}
       })();
