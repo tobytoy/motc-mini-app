@@ -34,6 +34,14 @@ export const BOT_TOOLS: ToolDefinition[] = [
     }
   },
   {
+    name: "show_silver_protect",
+    description: "開啟「銀髮出行守護員」專區 (/銀髮守護 或 /silver)。展示雙介面陪伴系統：長者端 LINE Mini App (一鍵回家、看醫生、大照片地點、語音問路、相機看站牌與藥袋) 與 子女家屬 PC 電腦代管平台",
+    parameters: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
     name: "show_eagle_eye",
     description: "開啟「路安鷹眼」LINE Mini App (motc-mini-eagle-eye)，提供 300 大易肇事熱點距離倒數警示、全台周邊即時 CCTV 監視器直擊、TDX 突發事故與道路施工即時通報",
     parameters: {

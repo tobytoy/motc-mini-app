@@ -2056,6 +2056,181 @@ export function createEagleEyeFlexMessage(
 }
 
 /**
+ * 9. 銀髮出行守護員專案氣泡 Flex Message (/銀髮守護 或 /silver)
+ */
+export function createSilverProtectFlexMessage(
+  miniAppUrl: string = "https://miniapp.line.me/2011556606-KbygvdxR",
+  guardianWebUrl: string = "https://motc-mini-dog.pages.dev/guardian"
+): OutgoingLineMessage {
+  const contents = {
+    type: "bubble",
+    size: "mega",
+    header: {
+      type: "box",
+      layout: "vertical",
+      backgroundColor: "#D97706",
+      paddingAll: "xl",
+      contents: [
+        {
+          type: "text",
+          text: "🧓 銀髮出行守護員 • AI Senior Companion",
+          color: "#FEF3C7",
+          size: "xs",
+          weight: "bold"
+        },
+        {
+          type: "text",
+          text: "長輩極簡出行 ✕ 家人安心代管",
+          color: "#FFFFFF",
+          size: "xl",
+          weight: "bold",
+          margin: "sm"
+        },
+        {
+          type: "text",
+          text: "motc-senior-care • 雙介面智慧照護陪伴系統",
+          color: "#FDE68A",
+          size: "xs",
+          margin: "xs"
+        }
+      ]
+    },
+    body: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "lg",
+      spacing: "md",
+      contents: [
+        {
+          type: "text",
+          text: "科技不該是長輩的高牆，而是有溫度的守護 🐾✨",
+          weight: "bold",
+          size: "sm",
+          color: "#B45309",
+          wrap: true
+        },
+        {
+          type: "text",
+          text: "顛覆傳統交通 App 複雜操作，繁複建檔由子女電腦代管，長輩在 LINE 手機端完全零負擔！",
+          size: "xs",
+          color: "#475569",
+          wrap: true
+        },
+        {
+          type: "separator",
+          color: "#E2E8F0"
+        },
+        // 模組 1: 長者端
+        {
+          type: "box",
+          layout: "vertical",
+          backgroundColor: "#F0FDF4",
+          cornerRadius: "md",
+          paddingAll: "md",
+          spacing: "xs",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "👴 長者端 (LINE Mini App)", size: "xs", weight: "bold", color: "#065F46", flex: 8 },
+                { type: "text", text: "零認知負擔", size: "xxs", color: "#059669", align: "end", flex: 4 }
+              ]
+            },
+            {
+              type: "text",
+              text: "• 🏠 一鍵回家 ＆ 🏥 看醫生 特大對比方塊\n• 🖼️ 親友合照地點格，一指點擊直達公車\n• 🎙️ 語音問路與相機拍照 (看站牌、看藥袋)\n• 🚨 SOS 求救長按 3 秒，秒傳 GPS 地址給家人",
+              size: "xxs",
+              color: "#334155",
+              wrap: true
+            }
+          ]
+        },
+        // 模組 2: 子女端
+        {
+          type: "box",
+          layout: "vertical",
+          backgroundColor: "#FAF5FF",
+          cornerRadius: "md",
+          paddingAll: "md",
+          spacing: "xs",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "💻 子女端 (PC 電腦管理台)", size: "xs", weight: "bold", color: "#6B21A8", flex: 8 },
+                { type: "text", text: "遠端代管設定", size: "xxs", color: "#7C3AED", align: "end", flex: 4 }
+              ]
+            },
+            {
+              type: "text",
+              text: "• 🖼️ 上傳父母常用實景招牌與親友合照庫\n• ♿ 生理輔具偏好 (避階梯/低地板/步行上限)\n• 📲 一鍵產生長者配對 QR Code 與邀請碼\n• 🤖 設定個人 Gemini Key，掌握外出日誌",
+              size: "xxs",
+              color: "#334155",
+              wrap: true
+            }
+          ]
+        },
+        {
+          type: "box",
+          layout: "vertical",
+          backgroundColor: "#FFFBEB",
+          cornerRadius: "md",
+          paddingAll: "sm",
+          contents: [
+            {
+              type: "text",
+              text: "⚠️ 本系統目前為早期概念驗證 (PoC 階段)，歡迎家庭照護者搶先試用與提供回饋！",
+              size: "xxs",
+              color: "#92400E",
+              wrap: true
+            }
+          ]
+        }
+      ]
+    },
+    footer: {
+      type: "box",
+      layout: "vertical",
+      spacing: "sm",
+      paddingAll: "lg",
+      contents: [
+        {
+          type: "button",
+          style: "primary",
+          color: "#059669",
+          height: "sm",
+          action: {
+            type: "uri",
+            label: "👴 開啟長者端 Mini App",
+            uri: miniAppUrl
+          }
+        },
+        {
+          type: "button",
+          style: "primary",
+          color: "#7C3AED",
+          height: "sm",
+          action: {
+            type: "uri",
+            label: "💻 開啟子女代管平台 (電腦端)",
+            uri: guardianWebUrl
+          }
+        }
+      ]
+    }
+  };
+
+  return {
+    type: "flex",
+    altText: "🧓 銀髮出行守護員 (長者端 Mini App ✕ 子女端電腦代管平台)",
+    contents,
+    quickReply: BOT_QUICK_REPLY
+  };
+}
+
+/**
  * 8. 意見回復表單可愛氣泡 Flex Message (/意見 或 /feedback)
  */
 export function createFeedbackFlexMessage(

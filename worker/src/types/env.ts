@@ -16,6 +16,8 @@ export interface Env {
   DETECTIVE_WEB_URL?: string;
   EAGLE_EYE_LIFF_URL?: string;
   EAGLE_EYE_WEB_URL?: string;
+  SENIOR_CARE_LIFF_URL?: string;
+  GUARDIAN_WEB_URL?: string;
   APPS_SCRIPT_AUTH_URL?: string;
   KNOWN_INTERNAL_USER_IDS?: string;
   // AI & Classifier
@@ -30,6 +32,7 @@ export type BotToolName =
   | "show_detective"
   | "show_projects"
   | "who_are_you"
+  | "show_silver_protect"
   | "show_eagle_eye"
   | "help"
   | "apply_test"

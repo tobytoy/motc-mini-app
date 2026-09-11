@@ -14,7 +14,8 @@ import {
   createFeedbackFlexMessage,
   createAllInclusiveProjectsFlexMessage,
   createExternalProjectsFlexMessage,
-  createEagleEyeFlexMessage
+  createEagleEyeFlexMessage,
+  createSilverProtectFlexMessage
 } from "../src/line/templates";
 import type { Env } from "../src/types/env";
 import type { LineFlexMessage } from "../src/types/line";
@@ -77,8 +78,8 @@ async function runTests() {
     { input: "/內部", expected: "show_projects" },
     { input: "/科資司", expected: "show_projects" },
     { input: "/internal", expected: "show_projects" },
-    { input: "/demo", expected: "show_projects" },
-    { input: "/銀髮守護", expected: "show_projects" },
+    { input: "/silver", expected: "show_silver_protect" },
+    { input: "/銀髮守護", expected: "show_silver_protect" },
     { input: "/yolo", expected: "show_projects" },
     { input: "/seo", expected: "show_projects" },
     { input: "/命理", expected: "show_projects" },
@@ -176,6 +177,14 @@ async function runTests() {
   assert.ok(eagleMsg.altText.includes("路安鷹眼"));
   assert.ok(JSON.stringify(eagleMsg).includes("motc-mini-eagle-eye"));
   assertValidFlex(eagleMsg);
+  const silverMsg = createSilverProtectFlexMessage(
+    "https://miniapp.line.me/2011556606-KbygvdxR",
+    "https://motc-mini-dog.pages.dev/guardian"
+  ) as LineFlexMessage;
+  assert.equal(silverMsg.type, "flex");
+  assert.ok(silverMsg.altText.includes("銀髮出行守護員"));
+  assert.ok(JSON.stringify(silverMsg).includes("motc-senior-care"));
+  assertValidFlex(silverMsg);
   const ticketId = generateFeedbackTicketId("U1234567890abcdef");
   assert.match(ticketId, /^FB-\d{8}-\d{4}-[A-Z0-9]{4}$/, "Ticket ID format must match FB-YYYYMMDD-HHMM-XXXX");
   const feedbackUrl = buildPrefilledFeedbackFormUrl("U1234567890abcdef", "測試小明", ticketId);
