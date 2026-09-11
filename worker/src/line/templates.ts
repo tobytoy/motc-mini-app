@@ -29,6 +29,14 @@ export const BOT_QUICK_REPLY: LineQuickReply = {
     {
       type: "action",
       action: {
+        type: "message",
+        label: "💻 專案大廳",
+        text: "/project"
+      }
+    },
+    {
+      type: "action",
+      action: {
         type: "location",
         label: "📍 傳送位置"
       }
@@ -1531,7 +1539,15 @@ export function createHelpFlexMessage(urls: {
                 { type: "text", text: "💬 /意見", size: "xs", weight: "bold", color: "#EC4899", flex: 4 },
                 { type: "text", text: "意見回覆單 (自動綁定單號與身分)", size: "xxs", color: "#64748B", flex: 6 }
               ]
-            }
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "💻 /project", size: "xs", weight: "bold", color: "#7C3AED", flex: 4 },
+                { type: "text", text: "專案大廳 (24 大系統平台總覽)", size: "xxs", color: "#64748B", flex: 6 }
+              ]
+            },
           ]
         },
         {

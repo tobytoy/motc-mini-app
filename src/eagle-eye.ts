@@ -113,6 +113,7 @@ interface AppState {
   voiceAlertEnabled: boolean;
   activeCctvInterval: number | null;
   tileLayer: L.TileLayer | null;
+  markersMap: Map<string, L.Marker>;
 }
 
 const state: AppState = {
@@ -126,6 +127,7 @@ const state: AppState = {
   voiceAlertEnabled: true,
   activeCctvInterval: null,
   tileLayer: null,
+  markersMap: new Map(),
 };
 // ==========================================
 // DOM References
@@ -321,6 +323,23 @@ function renderRadarAlert(alert: EagleEyeApiResponse["radarAlert"]): void {
   }
 }
 
+function panToMarker(id: string, lat: number, lon: number): void {
+  if (!state.map) return;
+
+  state.map.flyTo([lat, lon], 16, { duration: 0.8 });
+  const marker = state.markersMap.get(id);
+  if (marker) {
+    setTimeout(() => {
+      marker.openPopup();
+    }, 850);
+  }
+
+  const mapElem = document.getElementById("radarMap");
+  if (mapElem) {
+    mapElem.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+}
+
 // ==========================================
 // Leaflet Map Markers Rendering
 // ==========================================
@@ -332,6 +351,7 @@ function renderMapMarkers(data: EagleEyeApiResponse): void {
   state.layers.hotspots.clearLayers();
   state.layers.events.clearLayers();
   state.layers.cctvs.clearLayers();
+  state.markersMap.clear();
 
   // Update user marker position
   if (state.userMarker) {
@@ -358,7 +378,8 @@ function renderMapMarkers(data: EagleEyeApiResponse): void {
       </div>
     `;
 
-    L.marker([spot.lat, spot.lng], { icon }).bindPopup(popupHtml).addTo(state.layers!.hotspots);
+    const marker = L.marker([spot.lat, spot.lng], { icon }).bindPopup(popupHtml).addTo(state.layers!.hotspots);
+    state.markersMap.set(`hotspot-${spot.rank}`, marker);
   });
 
   // 2. Live Events Markers
@@ -380,7 +401,8 @@ function renderMapMarkers(data: EagleEyeApiResponse): void {
       </div>
     `;
 
-    L.marker([ev.lat, ev.lon], { icon }).bindPopup(popupHtml).addTo(state.layers!.events);
+    const marker = L.marker([ev.lat, ev.lon], { icon }).bindPopup(popupHtml).addTo(state.layers!.events);
+    state.markersMap.set(`event-${ev.id}`, marker);
   });
 
   // 3. CCTV Markers
@@ -402,6 +424,7 @@ function renderMapMarkers(data: EagleEyeApiResponse): void {
     `;
 
     const marker = L.marker([cctv.lat, cctv.lon], { icon }).bindPopup(popupHtml).addTo(state.layers!.cctvs);
+    state.markersMap.set(`cctv-${cctv.id}`, marker);
 
     marker.on("popupopen", () => {
       const btn = document.querySelector(`.popup-cctv-btn[data-cctv-id="${cctv.id}"]`);
@@ -425,7 +448,7 @@ function renderCards(data: EagleEyeApiResponse, mode: FilterMode): void {
   if (mode === "all" || mode === "hotspot") {
     data.dangerHotspots.forEach((spot) => {
       const card = document.createElement("div");
-      card.className = `radar-card card-${spot.alertLevel}`;
+      card.className = `radar-card card-${spot.alertLevel} interactive-card`;
       card.innerHTML = `
         <div class="card-header-row">
           <div class="card-badge-box">
@@ -447,12 +470,25 @@ function renderCards(data: EagleEyeApiResponse, mode: FilterMode): void {
           <span class="tip-icon">💡</span>
           <p class="tip-text">${spot.defensiveTip}</p>
         </div>
-        <div class="card-footer-row">
-          <a href="https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}" target="_blank" class="btn btn-outline btn-sm">
-            <span>🧭 導航至該路段</span>
+        <div class="card-footer-row card-actions-flex">
+          <button class="btn btn-secondary btn-sm locate-marker-btn" data-id="hotspot-${spot.rank}">
+            <span>📍 查看位置</span>
+          </button>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}" target="_blank" class="btn btn-outline btn-sm nav-link-btn" onclick="event.stopPropagation()">
+            <span>🧭 Google 導航</span>
           </a>
         </div>
       `;
+      card.addEventListener("click", () => {
+        panToMarker(`hotspot-${spot.rank}`, spot.lat, spot.lng);
+      });
+      const locBtn = card.querySelector(".locate-marker-btn");
+      if (locBtn) {
+        locBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          panToMarker(`hotspot-${spot.rank}`, spot.lat, spot.lng);
+        });
+      }
       container.appendChild(card);
     });
   }
@@ -461,7 +497,7 @@ function renderCards(data: EagleEyeApiResponse, mode: FilterMode): void {
   if (mode === "all" || mode === "event") {
     data.liveEvents.forEach((ev) => {
       const card = document.createElement("div");
-      card.className = "radar-card card-event";
+      card.className = "radar-card card-event interactive-card";
       card.innerHTML = `
         <div class="card-header-row">
           <div class="card-badge-box">
@@ -476,7 +512,25 @@ function renderCards(data: EagleEyeApiResponse, mode: FilterMode): void {
           <span class="meta-tag">受阻車道：${ev.blockedLanes}</span>
           <span class="meta-tag">路段：${ev.roadName || "公路主線"} ${ev.direction || ""}</span>
         </div>
+        <div class="card-footer-row card-actions-flex">
+          <button class="btn btn-secondary btn-sm locate-marker-btn" data-id="event-${ev.id}">
+            <span>📍 查看位置</span>
+          </button>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=${ev.lat},${ev.lon}" target="_blank" class="btn btn-outline btn-sm nav-link-btn" onclick="event.stopPropagation()">
+            <span>🧭 Google 導航</span>
+          </a>
+        </div>
       `;
+      card.addEventListener("click", () => {
+        panToMarker(`event-${ev.id}`, ev.lat, ev.lon);
+      });
+      const locBtn = card.querySelector(".locate-marker-btn");
+      if (locBtn) {
+        locBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          panToMarker(`event-${ev.id}`, ev.lat, ev.lon);
+        });
+      }
       container.appendChild(card);
     });
   }
@@ -485,7 +539,7 @@ function renderCards(data: EagleEyeApiResponse, mode: FilterMode): void {
   if (mode === "all" || mode === "cctv") {
     data.cctvs.forEach((cctv) => {
       const card = document.createElement("div");
-      card.className = "radar-card card-cctv";
+      card.className = "radar-card card-cctv interactive-card";
       card.innerHTML = `
         <div class="card-header-row">
           <div class="card-badge-box">
@@ -509,8 +563,13 @@ function renderCards(data: EagleEyeApiResponse, mode: FilterMode): void {
             <span>▶️ 直擊畫面</span>
           </button>
         </div>
-        <div class="card-footer-row">
-          <span class="card-address">區域：${cctv.region} • 距離約 ${formatDistance(cctv.distanceMeters)}</span>
+        <div class="card-footer-row card-actions-flex">
+          <button class="btn btn-secondary btn-sm locate-marker-btn" data-id="cctv-${cctv.id}">
+            <span>📍 查看位置</span>
+          </button>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=${cctv.lat},${cctv.lon}" target="_blank" class="btn btn-outline btn-sm nav-link-btn" onclick="event.stopPropagation()">
+            <span>🧭 Google 導航</span>
+          </a>
         </div>
       `;
       const btn = card.querySelector(".open-cctv-btn");
@@ -522,8 +581,21 @@ function renderCards(data: EagleEyeApiResponse, mode: FilterMode): void {
       }
       const hero = card.querySelector(".cctv-card-hero");
       if (hero) {
-        hero.addEventListener("click", () => openCctvModal(cctv));
+        hero.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openCctvModal(cctv);
+        });
       }
+      const locBtn = card.querySelector(".locate-marker-btn");
+      if (locBtn) {
+        locBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          panToMarker(`cctv-${cctv.id}`, cctv.lat, cctv.lon);
+        });
+      }
+      card.addEventListener("click", () => {
+        panToMarker(`cctv-${cctv.id}`, cctv.lat, cctv.lon);
+      });
       container.appendChild(card);
     });
   }
