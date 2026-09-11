@@ -1879,6 +1879,149 @@ export function createDetectiveFlexMessage(
 }
 
 /**
+ * 8. 路安鷹眼雷達可愛氣泡 Flex Message (/eagle)
+ */
+export function createEagleEyeFlexMessage(
+  liffUrl: string = "https://miniapp.line.me/2011551329-VWljb6fv",
+  webUrl: string = "https://motc-mini-dog.pages.dev/eagle-eye"
+): OutgoingLineMessage {
+  const contents = {
+    type: "bubble",
+    size: "mega",
+    header: {
+      type: "box",
+      layout: "vertical",
+      backgroundColor: "#0F172A",
+      paddingAll: "xl",
+      contents: [
+        {
+          type: "text",
+          text: "🦅 全臺路況直擊 ＆ 事故防禦",
+          color: "#94A3B8",
+          size: "xs",
+          weight: "bold"
+        },
+        {
+          type: "text",
+          text: "路安鷹眼雷達",
+          color: "#38BDF8",
+          size: "xl",
+          weight: "bold",
+          margin: "sm"
+        },
+        {
+          type: "text",
+          text: "motc-mini-eagle-eye • 危險路段 ＆ 即時 CCTV",
+          color: "#CBD5E1",
+          size: "xs",
+          margin: "xs"
+        }
+      ]
+    },
+    body: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "xl",
+      spacing: "md",
+      contents: [
+        {
+          type: "text",
+          text: "🛡️ GPS 即時偵測，雙雷達守護您的出行安全！",
+          weight: "bold",
+          size: "sm",
+          color: "#0284C7",
+          wrap: true
+        },
+        {
+          type: "text",
+          text: "結合全台 300 大易肇事路口資料庫、TDX 突發事故即時通報，與 669+ 支國道/省道/市區即時 CCTV 監視器畫面。",
+          size: "xs",
+          color: "#475569",
+          wrap: true
+        },
+        {
+          type: "separator",
+          color: "#E2E8F0"
+        },
+        {
+          type: "box",
+          layout: "vertical",
+          backgroundColor: "#F0F9FF",
+          cornerRadius: "md",
+          paddingAll: "md",
+          spacing: "sm",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "🚨", size: "sm", flex: 1 },
+                { type: "text", text: "肇事熱點", size: "xs", weight: "bold", color: "#EF4444", flex: 3 },
+                { type: "text", text: "危險路口距離倒數與盲區預警", size: "xs", color: "#64748B", flex: 7 }
+              ]
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "⚡", size: "sm", flex: 1 },
+                { type: "text", text: "突發路況", size: "xs", weight: "bold", color: "#F59E0B", flex: 3 },
+                { type: "text", text: "車道封閉/車禍事故即時通報", size: "xs", color: "#64748B", flex: 7 }
+              ]
+            },
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "📹", size: "sm", flex: 1 },
+                { type: "text", text: "即時CCTV", size: "xs", weight: "bold", color: "#06B6D4", flex: 3 },
+                { type: "text", text: "秒級直擊現場路況監視畫面", size: "xs", color: "#64748B", flex: 7 }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    footer: {
+      type: "box",
+      layout: "vertical",
+      spacing: "sm",
+      paddingAll: "lg",
+      contents: [
+        {
+          type: "button",
+          style: "primary",
+          color: "#0284C7",
+          height: "sm",
+          action: {
+            type: "uri",
+            label: "🦅 開啟路安鷹眼 Mini App",
+            uri: liffUrl
+          }
+        },
+        {
+          type: "button",
+          style: "secondary",
+          height: "sm",
+          action: {
+            type: "uri",
+            label: "🌐 網頁版入口",
+            uri: webUrl
+          }
+        }
+      ]
+    }
+  };
+
+  return {
+    type: "flex",
+    altText: "🦅 路安鷹眼雷達 (即時路況 ＆ 事故防禦)",
+    contents,
+    quickReply: BOT_QUICK_REPLY
+  };
+}
+
+/**
  * 8. 意見回復表單可愛氣泡 Flex Message (/意見 或 /feedback)
  */
 export function createFeedbackFlexMessage(

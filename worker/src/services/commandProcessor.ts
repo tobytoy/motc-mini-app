@@ -15,7 +15,8 @@ import {
   buildPrefilledFeedbackFormUrl,
   createFeedbackFlexMessage,
   createAllInclusiveProjectsFlexMessage,
-  createExternalProjectsFlexMessage
+  createExternalProjectsFlexMessage,
+  createEagleEyeFlexMessage
 } from "../line/templates";
 
 export async function processLineEvent(event: LineEvent, env: Env): Promise<void> {
@@ -31,6 +32,8 @@ export async function processLineEvent(event: LineEvent, env: Env): Promise<void
   const demoAppUrl = env.DEMO_APP_URL || "https://ai.studio/apps/1d7b8b11-885e-4bcd-947e-a77325ac06f6?fullscreenApplet=true";
   const detectiveLiffUrl = env.DETECTIVE_LIFF_URL || "https://miniapp.line.me/2011521041-JnfPdXhF";
   const detectiveWebUrl = env.DETECTIVE_WEB_URL || "https://motc-mini-dog.pages.dev/search";
+  const eagleEyeLiffUrl = env.EAGLE_EYE_LIFF_URL || "https://miniapp.line.me/2011551329-VWljb6fv";
+  const eagleEyeWebUrl = env.EAGLE_EYE_WEB_URL || "https://motc-mini-dog.pages.dev/eagle-eye";
 
   const userId = event.source.userId;
   const replyToken = event.replyToken;
@@ -105,6 +108,10 @@ export async function processLineEvent(event: LineEvent, env: Env): Promise<void
 
         case "show_detective":
           await lineClient.reply(replyToken, createDetectiveFlexMessage(detectiveLiffUrl, detectiveWebUrl));
+          break;
+
+        case "show_eagle_eye":
+          await lineClient.reply(replyToken, createEagleEyeFlexMessage(eagleEyeLiffUrl, eagleEyeWebUrl));
           break;
         case "show_projects": {
           let isInternal = false;

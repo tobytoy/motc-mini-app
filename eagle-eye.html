@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>motc-mini-eagle-eye | 路安鷹眼 • 即時路況與防禦雷達</title>
+    <meta name="description" content="LINE Mini App - 路安鷹眼 (危險路段防禦雷達 ＆ 周邊即時 CCTV 直擊 ＆ 突發事故通報)" />
+    <!-- Anti-flash theme initialization from Cookie / LocalStorage -->
+    <script>
+      (function () {
+        try {
+          var cookieMatch = document.cookie.match(/(?:^|;\s*)theme=([^;]+)/);
+          var saved = cookieMatch ? cookieMatch[1] : localStorage.getItem("theme");
+          var theme = saved || "dark";
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {}
+      })();
+    </script>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <!-- App CSS -->
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div class="app-container eagle-eye-app">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-top">
+          <div class="brand">
+            <span class="brand-icon">🦅</span>
+            <div class="brand-text">
+              <h1 class="brand-title">路安鷹眼雷達</h1>
+              <span class="brand-sub">motc-mini-eagle-eye • 即時路況 ＆ 事故防禦</span>
+            </div>
+          </div>
+          <div class="header-actions">
+            <a href="/" class="theme-toggle-btn" title="切換至周邊交通助手" aria-label="回到周邊交通">
+              <span>🐶</span>
+            </a>
+            <a href="/search" class="theme-toggle-btn" title="切換至資料小偵探" aria-label="回到資料查詢小偵探">
+              <span>🕵️‍♂️</span>
+            </a>
+            <button id="themeToggleBtn" class="theme-toggle-btn" title="切換深淺色模式" aria-label="切換深淺色模式">
+              <span id="themeIcon">☀️</span>
+            </button>
+            <div id="userBadge" class="user-badge">
+              <div class="avatar-placeholder" id="userAvatar">👤</div>
+              <span id="userName" class="user-name">載入中...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Radar Alert Strip -->
+        <div id="radarAlertBanner" class="radar-alert-banner alert-safe">
+          <div class="alert-icon-box">
+            <span id="radarAlertIcon">🛡️</span>
+          </div>
+          <div class="alert-content">
+            <h2 id="radarHeadline" class="alert-headline">GPS 雷達偵測中...</h2>
+            <p id="radarDetail" class="alert-detail">正在掃描方圓易肇事路段、突發事故與周邊監視器</p>
+          </div>
+          <button id="voiceAlertBtn" class="voice-alert-toggle" title="切換語音播報">
+            <span id="voiceAlertIcon">🔊</span>
+          </button>
+        </div>
+
+        <!-- Location & Action Bar -->
+        <div class="action-bar eagle-actions">
+          <button id="locateBtn" class="btn btn-primary" title="重新定位目前 GPS">
+            <span class="btn-icon">🎯</span>
+            <span class="btn-text">GPS 定位</span>
+          </button>
+          <button id="refreshBtn" class="btn btn-secondary" title="更新即時路況與 CCTV">
+            <span class="btn-icon">🔄</span>
+            <span class="btn-text">刷新雷達</span>
+          </button>
+          <button id="shareBtn" class="btn btn-outline" title="分享即時路況至 LINE 聊天室">
+            <span class="btn-icon">📤</span>
+            <span class="btn-text">分享路況</span>
+          </button>
+          <span id="locCoordsText" class="loc-coords-badge">25.0478° N, 121.5170° E</span>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Interactive Radar Map -->
+        <section class="map-section">
+          <div class="map-header">
+            <span class="map-title">🗺️ 周邊防禦雷達圖臺</span>
+            <div class="map-legend">
+              <span class="legend-item"><span class="legend-dot dot-user"></span>目前位置</span>
+              <span class="legend-item"><span class="legend-dot dot-danger"></span>肇事熱點</span>
+              <span class="legend-item"><span class="legend-dot dot-event"></span>突發事件</span>
+              <span class="legend-item"><span class="legend-dot dot-cctv"></span>即時 CCTV</span>
+            </div>
+          </div>
+          <div id="radarMap" class="radar-map-container"></div>
+        </section>
+
+        <!-- Segmented Mode Tabs -->
+        <section class="filter-section">
+          <div class="tabs-segmented">
+            <button class="tab-btn active" data-mode="all">
+              <span>🌟 全部雷達</span>
+              <span id="countAll" class="tab-count">--</span>
+            </button>
+            <button class="tab-btn" data-mode="hotspot">
+              <span>🚨 肇事熱點</span>
+              <span id="countHotspot" class="tab-count">--</span>
+            </button>
+            <button class="tab-btn" data-mode="event">
+              <span>⚡ 即時路況</span>
+              <span id="countEvent" class="tab-count">--</span>
+            </button>
+            <button class="tab-btn" data-mode="cctv">
+              <span>📹 周邊 CCTV</span>
+              <span id="countCctv" class="tab-count">--</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Cards List -->
+        <section class="list-section">
+          <div id="radarLoader" class="skeleton-list">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+
+          <div id="radarCardsGrid" class="cards-grid"></div>
+        </section>
+      </main>
+
+      <!-- CCTV Modal Viewer -->
+      <div id="cctvModal" class="cctv-modal" style="display: none;">
+        <div class="cctv-modal-overlay" id="cctvModalOverlay"></div>
+        <div class="cctv-modal-content">
+          <div class="cctv-modal-header">
+            <div class="cctv-modal-title-box">
+              <span class="cctv-badge-live">LIVE 實況</span>
+              <h3 id="cctvModalTitle" class="cctv-modal-title">國道1號 監視器</h3>
+            </div>
+            <button id="closeCctvModalBtn" class="cctv-modal-close" title="關閉">✕</button>
+          </div>
+          <div class="cctv-player-wrap">
+            <img id="cctvImagePlayer" class="cctv-image-stream" alt="即時 CCTV 監視器畫面" />
+            <div id="cctvPlayerLoader" class="cctv-player-loading">載入即時影像中...</div>
+          </div>
+          <div class="cctv-modal-footer">
+            <span id="cctvRefreshIndicator" class="cctv-refresh-tag">自動刷新中 (每 3 秒)</span>
+            <a id="cctvNavBtn" href="#" target="_blank" class="btn btn-primary btn-sm">
+              <span>🧭 前往該路段導航</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="app-footer">
+        <p>資料來源：交通部 TDX 運輸資料流通服務 • 國道公路局 • 道路事故熱點資料庫</p>
+        <p class="footer-meta">LINE Mini App • motc-mini-eagle-eye</p>
+      </footer>
+    </div>
+
+    <!-- Script Entrypoint -->
+    <script type="module" src="/src/eagle-eye.ts"></script>
+  </body>
+</html>

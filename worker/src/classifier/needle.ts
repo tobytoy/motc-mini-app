@@ -106,6 +106,18 @@ export class NeedleClassifier {
       };
     }
 
+    // Eagle Eye Radar (motc-mini-eagle-eye)
+    if (
+      /^(eagle|eagle-?eye|鷹眼|路安|防禦雷達|雷達|cctv|監視器|即時路況|路況|危險路段|肇事熱點|車禍|事故)$/i.test(lower) ||
+      /(鷹眼|路安鷹眼|防禦雷達|周邊cctv|即時cctv|路況監視|危險路段|易肇事|事故熱點)/i.test(lower)
+    ) {
+      return {
+        tool: "show_eagle_eye",
+        confidence: 1.0,
+        reasoning: "Matched show_eagle_eye pattern"
+      };
+    }
+
     // 5. Unified Project Hub (內部與外部專案系統，依權限動態分流)
     if (
       /^(project|專案|項目管理|專案管理|外部|內部|科資司|系統|平台|展示|資源|internal|links|web|demo|銀髮|銀髮守護|yolo|yolo26|opendata|語料|seo|市場|市場分析|marketpulse|oss|項目監測|ossradar|命理|sharenote|分享訊息|okr|ogsm|目標管理|雙引擎)$/i.test(lower) ||

@@ -34,6 +34,14 @@ export const BOT_TOOLS: ToolDefinition[] = [
     }
   },
   {
+    name: "show_eagle_eye",
+    description: "開啟「路安鷹眼」LINE Mini App (motc-mini-eagle-eye)，提供 300 大易肇事熱點距離倒數警示、全台周邊即時 CCTV 監視器直擊、TDX 突發事故與道路施工即時通報",
+    parameters: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
     name: "show_projects",
     description: "查看 MOTC 專案展示與系統總覽 (/project)。依據使用者內部權限動態分流：外部訪客顯示 11 大公開大數據與展示平台；內部同仁同時解鎖 13 大內部核心工具與 11 大公開平台 (共 24 大系統)",
     parameters: {

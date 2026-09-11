@@ -13,7 +13,8 @@ import {
   buildPrefilledFeedbackFormUrl,
   createFeedbackFlexMessage,
   createAllInclusiveProjectsFlexMessage,
-  createExternalProjectsFlexMessage
+  createExternalProjectsFlexMessage,
+  createEagleEyeFlexMessage
 } from "../src/line/templates";
 import type { Env } from "../src/types/env";
 import type { LineFlexMessage } from "../src/types/line";
@@ -82,7 +83,9 @@ async function runTests() {
     { input: "/seo", expected: "show_projects" },
     { input: "/命理", expected: "show_projects" },
     { input: "/okr", expected: "show_projects" },
-    { input: "/ogsm", expected: "show_projects" }
+    { input: "/ogsm", expected: "show_projects" },
+    { input: "/eagle", expected: "show_eagle_eye" },
+    { input: "/鷹眼", expected: "show_eagle_eye" }
   ];
 
   for (const { input, expected } of tests) {
@@ -168,6 +171,11 @@ async function runTests() {
   assert.equal(detectiveMsg.type, "flex");
   assert.equal(detectiveMsg.altText, "🕵️‍♂️ 資料查詢小偵探 (TDX 738+ API 探勘)");
   assert.ok(JSON.stringify(detectiveMsg).includes("motc-mini-search"));
+  const eagleMsg = createEagleEyeFlexMessage("https://miniapp.line.me/2011551329-VWljb6fv", "https://motc-mini-dog.pages.dev/eagle-eye") as LineFlexMessage;
+  assert.equal(eagleMsg.type, "flex");
+  assert.ok(eagleMsg.altText.includes("路安鷹眼"));
+  assert.ok(JSON.stringify(eagleMsg).includes("motc-mini-eagle-eye"));
+  assertValidFlex(eagleMsg);
   const ticketId = generateFeedbackTicketId("U1234567890abcdef");
   assert.match(ticketId, /^FB-\d{8}-\d{4}-[A-Z0-9]{4}$/, "Ticket ID format must match FB-YYYYMMDD-HHMM-XXXX");
   const feedbackUrl = buildPrefilledFeedbackFormUrl("U1234567890abcdef", "測試小明", ticketId);

@@ -1765,3 +1765,562 @@ html[data-theme="dark"] .api-card-actions {
   opacity: 1;
 }
 
+/* ==========================================================================
+   Eagle Eye Radar Styles (eagle-eye.html)
+   ========================================================================== */
+
+.radar-alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.alert-danger {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+.alert-danger .alert-headline {
+  color: #ef4444;
+}
+
+.alert-warning {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+.alert-warning .alert-headline {
+  color: #f59e0b;
+}
+
+.alert-safe {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+.alert-safe .alert-headline {
+  color: #10b981;
+}
+
+.alert-icon-box {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.alert-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-headline {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 2px 0;
+  line-height: 1.3;
+}
+
+.alert-detail {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+html[data-theme="dark"] .alert-detail {
+  color: #94a3b8;
+}
+
+.voice-alert-toggle {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: inherit;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: opacity 0.2s ease;
+}
+.voice-alert-toggle.disabled {
+  opacity: 0.4;
+}
+
+.eagle-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.loc-coords-badge {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: #64748b;
+  margin-left: auto;
+}
+html[data-theme="dark"] .loc-coords-badge {
+  color: #94a3b8;
+}
+
+/* Map Section */
+.map-section {
+  margin-bottom: 16px;
+}
+.map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.map-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+.map-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: #64748b;
+}
+html[data-theme="dark"] .map-legend {
+  color: #94a3b8;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot-user { background: #3b82f6; }
+.dot-danger { background: #ef4444; }
+.dot-event { background: #f59e0b; }
+.dot-cctv { background: #06b6d4; }
+
+.radar-map-container {
+  width: 100%;
+  height: 280px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+html[data-theme="dark"] .radar-map-container {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* User Pulse Marker */
+.user-pulse-marker {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+.pulse-ring {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.35);
+  animation: pulse-ring 1.8s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+.user-core-dot {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #2563eb;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 6px rgba(37, 99, 235, 0.8);
+}
+@keyframes pulse-ring {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* Danger Marker */
+.radar-danger-marker {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.marker-rank {
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffffff;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.radar-event-marker, .radar-cctv-marker {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #1e293b;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* Map Popups */
+.map-popup-card {
+  font-family: inherit;
+  min-width: 200px;
+  padding: 4px;
+}
+.popup-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+.badge-danger { background: #fee2e2; color: #dc2626; }
+.badge-warning { background: #fef3c7; color: #d97706; }
+.badge-event { background: #fef3c7; color: #b45309; }
+.badge-cctv { background: #cffafe; color: #0891b2; }
+.popup-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 4px 0;
+  line-height: 1.3;
+}
+.popup-stats, .popup-detail, .popup-tip {
+  font-size: 11px;
+  margin: 4px 0;
+  color: #475569;
+}
+.popup-nav-link {
+  font-size: 11px;
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+/* Radar Card Styling */
+.radar-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+html[data-theme="dark"] .radar-card {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+.card-danger {
+  border-left: 4px solid #ef4444;
+}
+.card-warning {
+  border-left: 4px solid #f59e0b;
+}
+.card-event {
+  border-left: 4px solid #f59e0b;
+}
+.card-cctv {
+  border-left: 4px solid #06b6d4;
+}
+
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-badge-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.badge-rank {
+  background: #e2e8f0;
+  color: #334155;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+html[data-theme="dark"] .badge-rank {
+  background: #334155;
+  color: #e2e8f0;
+}
+.badge-alert-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.tag-danger { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.tag-warning { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.badge-event-type {
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.badge-severity {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.sev-2 { background: #fee2e2; color: #dc2626; }
+.sev-1 { background: #fef3c7; color: #d97706; }
+.sev-0 { background: #ecfdf5; color: #059669; }
+
+.badge-cctv-live {
+  font-size: 10px;
+  font-weight: 700;
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.badge-cctv-road {
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(6, 182, 212, 0.15);
+  color: #0891b2;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.card-distance {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2563eb;
+}
+html[data-theme="dark"] .card-distance {
+  color: #60a5fa;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.35;
+}
+.card-address {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+}
+html[data-theme="dark"] .card-address {
+  color: #94a3b8;
+}
+.card-desc {
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.card-stats-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.stat-pill {
+  font-size: 11px;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+html[data-theme="dark"] .stat-pill {
+  background: #334155;
+  color: #cbd5e1;
+}
+
+.card-tip-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  background: rgba(245, 158, 11, 0.08);
+  border-left: 3px solid #f59e0b;
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+.tip-icon { font-size: 14px; flex-shrink: 0; }
+.tip-text { font-size: 11px; color: #b45309; margin: 0; line-height: 1.35; }
+html[data-theme="dark"] .tip-text { color: #fbbf24; }
+
+.card-event-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  color: #64748b;
+}
+html[data-theme="dark"] .card-event-meta {
+  color: #94a3b8;
+}
+.meta-tag {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.card-footer-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+/* CCTV Thumbnail Preview */
+.cctv-thumb-wrap {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0f172a;
+  cursor: pointer;
+}
+.cctv-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.thumb-live-tag {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+/* CCTV Modal Viewer */
+.cctv-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+.cctv-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+}
+.cctv-modal-content {
+  position: relative;
+  z-index: 10;
+  background: #ffffff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+html[data-theme="dark"] .cctv-modal-content {
+  background: #1e293b;
+  border: 1px solid #334155;
+}
+.cctv-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+html[data-theme="dark"] .cctv-modal-header {
+  border-bottom-color: #334155;
+}
+.cctv-modal-title-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cctv-modal-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+}
+.cctv-modal-close {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+}
+.cctv-player-wrap {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cctv-image-stream {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.cctv-player-loading {
+  position: absolute;
+  color: #94a3b8;
+  font-size: 13px;
+}
+.cctv-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-top: 1px solid #e2e8f0;
+}
+html[data-theme="dark"] .cctv-modal-footer {
+  border-top-color: #334155;
+}
+.cctv-refresh-tag {
+  font-size: 11px;
+  color: #64748b;
+}
+html[data-theme="dark"] .cctv-refresh-tag {
+  color: #94a3b8;
+}
+
