@@ -1002,7 +1002,7 @@ async function generateGeminiAdvice(
   parkingLots: Array<{ name: string; availableSpaces: number; distanceMeters: number }>,
   busStops: Array<{ name: string; distanceMeters: number; routes: Array<{ routeName: string; statusText: string }> }>
 ): Promise<{ title: string; summary: string; detail: string; type: "bike" | "parking" | "bus" | "weather" | "general" } | null> {
-  const model = "gemini-3.5-flash-lite";
+  const model = "gemini-3.1-flash-lite";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const nearestBike = youbikes[0];

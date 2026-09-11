@@ -22,6 +22,14 @@ export const BOT_QUICK_REPLY: LineQuickReply = {
       type: "action",
       action: {
         type: "message",
+        label: "🧓 銀髮守護",
+        text: "/銀髮守護"
+      }
+    },
+    {
+      type: "action",
+      action: {
+        type: "message",
         label: "🕵️‍♂️ 資料偵探",
         text: "/search"
       }
