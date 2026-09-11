@@ -137,7 +137,10 @@ async function runTests() {
 
   const externalProjectsMsg = createExternalProjectsFlexMessage("https://form.test") as LineFlexMessage;
   assert.equal(externalProjectsMsg.type, "flex");
-  assert.ok(externalProjectsMsg.altText.includes("8 大公開平台"));
+  assert.ok(externalProjectsMsg.altText.includes("11 大公開平台"));
+  assert.ok(JSON.stringify(externalProjectsMsg).includes("UI catwalk"));
+  assert.ok(JSON.stringify(externalProjectsMsg).includes("OpenData"));
+  assert.ok(JSON.stringify(externalProjectsMsg).includes("項目監測站"));
   assert.ok(JSON.stringify(externalProjectsMsg).includes("銀髮守護"));
   assertValidFlex(externalProjectsMsg);
   const whoMsg = createWhoAreYouFlexMessage({
