@@ -108,8 +108,8 @@ export class NeedleClassifier {
 
     // 5. Unified Project Hub (內部與外部專案系統，依權限動態分流)
     if (
-      /^(project|專案|項目管理|專案管理|外部|內部|科資司|系統|平台|展示|資源|internal|links|web|demo|銀髮|銀髮守護|yolo|yolo26|opendata|語料|seo|市場|市場分析|marketpulse|oss|項目監測|ossradar|命理|sharenote|分享訊息)$/i.test(lower) ||
-      /(專案|項目管理|外部系統|內部專案|大數據平台|系統清單|內部系統|展示平台|demo|開發階段|銀髮守護|銀髮|yolo|yolo26|opendata|開放語料|seo|全球市場|marketpulse|項目監測|ossradar|命理工作室|sharenote|分享訊息)/i.test(lower)
+      /^(project|專案|項目管理|專案管理|外部|內部|科資司|系統|平台|展示|資源|internal|links|web|demo|銀髮|銀髮守護|yolo|yolo26|opendata|語料|seo|市場|市場分析|marketpulse|oss|項目監測|ossradar|命理|sharenote|分享訊息|okr|ogsm|目標管理|雙引擎)$/i.test(lower) ||
+      /(專案|項目管理|外部系統|內部專案|大數據平台|系統清單|內部系統|展示平台|demo|開發階段|銀髮守護|銀髮|yolo|yolo26|opendata|開放語料|seo|全球市場|marketpulse|項目監測|ossradar|命理工作室|sharenote|分享訊息|okr|ogsm|目標管理|雙引擎)/i.test(lower)
     ) {
       return {
         tool: "show_projects",

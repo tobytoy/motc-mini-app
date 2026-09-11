@@ -80,7 +80,9 @@ async function runTests() {
     { input: "/銀髮守護", expected: "show_projects" },
     { input: "/yolo", expected: "show_projects" },
     { input: "/seo", expected: "show_projects" },
-    { input: "/命理", expected: "show_projects" }
+    { input: "/命理", expected: "show_projects" },
+    { input: "/okr", expected: "show_projects" },
+    { input: "/ogsm", expected: "show_projects" }
   ];
 
   for (const { input, expected } of tests) {
@@ -104,7 +106,9 @@ async function runTests() {
 
   const allProjectsMsg = createAllInclusiveProjectsFlexMessage("王季豪") as LineFlexMessage;
   assert.equal(allProjectsMsg.type, "flex");
-  assert.ok(allProjectsMsg.altText.includes("23 大系統"));
+  assert.ok(allProjectsMsg.altText.includes("24 大系統"));
+  assert.ok(JSON.stringify(allProjectsMsg).includes("d82a5044-8526-4c32-9ef7-a724ff0035ba"));
+  assert.ok(JSON.stringify(allProjectsMsg).includes("OKR & OGSM"));
   assert.ok(JSON.stringify(allProjectsMsg).includes("1d7b8b11-885e-4bcd-947e-a77325ac06f6"));
   assert.ok(JSON.stringify(allProjectsMsg).includes("銀髮守護"));
   assert.ok(JSON.stringify(allProjectsMsg).includes("Yolo26"));
