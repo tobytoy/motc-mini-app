@@ -1,5 +1,6 @@
 import liff from "@line/liff";
 import L from "leaflet";
+import metroStationsData from "./data/metroStations.json";
 
 // ==========================================
 // Types
@@ -26,16 +27,15 @@ export interface HotspotItem {
 export interface CCTVItem {
   id: string;
   name: string;
-  roadName: string;
-  locationName: string;
+  videoUrl: string;
+  snapshotUrl: string;
   lat: number;
   lon: number;
   distanceMeters: number;
-  videoUrl: string;
-  snapshotUrl: string;
-  status: string;
-  region: string;
-  mileage?: string;
+  status: "online" | "standby";
+  roadName: string;
+  locationName: string;
+  mileage: string;
 }
 
 export interface LiveRoadEvent {
@@ -53,6 +53,16 @@ export interface LiveRoadEvent {
   publishTime: string;
   roadName?: string;
   direction?: string;
+}
+
+export interface MetroStationItem {
+  id: string;
+  name: string;
+  op: string;
+  lat: number;
+  lon: number;
+  city: string;
+  distanceMeters: number;
 }
 
 export interface EagleEyeApiResponse {
@@ -91,35 +101,68 @@ const CONFIG = {
   CARTO_KEY: "cb1_34ly_1_0922d1c895d7b40fd9f335f0",
 };
 
+export const BASEMAP_TILES = {
+  nlsc: {
+    url: "https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}",
+    options: {
+      maxZoom: 20,
+      attribution: '&copy; <a href="https://maps.nlsc.gov.tw/" target="_blank">國土測繪圖資服務雲</a>',
+    },
+  },
+  osm: {
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    options: {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+    },
+  },
+  carto: {
+    url: `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${CONFIG.CARTO_KEY}`,
+    options: {
+      maxZoom: 19,
+      subdomains: "abcd",
+      attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
+    },
+  },
+};
+
+export type BasemapType = "nlsc" | "osm" | "carto";
+
 function getCartoTileUrl(_theme?: string): string {
   // CARTO Voyager: 亮色高清圖磚，道路標記與地標鮮明對比，無暗黑感
   return `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${CONFIG.CARTO_KEY}`;
 }
-type FilterMode = "all" | "hotspot" | "event" | "cctv";
+export type FilterMode = "all" | "hotspot" | "event" | "cctv" | "metro";
 
 interface AppState {
   currentLat: number;
   currentLon: number;
   activeMode: FilterMode;
+  currentBasemap: BasemapType;
   data: EagleEyeApiResponse | null;
+  nearbyMetros: MetroStationItem[];
   map: L.Map | null;
   userMarker: L.Marker | null;
   layers: {
     hotspots: L.LayerGroup;
     events: L.LayerGroup;
     cctvs: L.LayerGroup;
+    metros: L.LayerGroup;
   } | null;
   voiceAlertEnabled: boolean;
   activeCctvInterval: number | null;
   tileLayer: L.TileLayer | null;
   markersMap: Map<string, L.Marker>;
+  isMapLocked: boolean;
 }
 
 const state: AppState = {
   currentLat: CONFIG.DEFAULT_LAT,
   currentLon: CONFIG.DEFAULT_LON,
   activeMode: "all",
+  currentBasemap: "nlsc",
   data: null,
+  nearbyMetros: [],
   map: null,
   userMarker: null,
   layers: null,
@@ -127,6 +170,7 @@ const state: AppState = {
   activeCctvInterval: null,
   tileLayer: null,
   markersMap: new Map(),
+  isMapLocked: false,
 };
 // ==========================================
 // DOM References
@@ -147,12 +191,18 @@ const DOM = {
   refreshBtn: document.getElementById("refreshBtn") as HTMLButtonElement,
   shareBtn: document.getElementById("shareBtn") as HTMLButtonElement,
   locCoordsText: document.getElementById("locCoordsText") as HTMLElement,
+  radarMapWrapper: document.getElementById("radarMapWrapper") as HTMLElement,
+  lockRadarMapBtn: document.getElementById("lockRadarMapBtn") as HTMLButtonElement,
+  centerRadarMeBtn: document.getElementById("centerRadarMeBtn") as HTMLButtonElement,
+  toast: document.getElementById("toast") as HTMLElement,
+  toastMsg: document.getElementById("toastMsg") as HTMLElement,
   radarLoader: document.getElementById("radarLoader") as HTMLElement,
   radarCardsGrid: document.getElementById("radarCardsGrid") as HTMLElement,
   countAll: document.getElementById("countAll") as HTMLElement,
   countHotspot: document.getElementById("countHotspot") as HTMLElement,
   countEvent: document.getElementById("countEvent") as HTMLElement,
   countCctv: document.getElementById("countCctv") as HTMLElement,
+  countMetro: document.getElementById("countMetro") as HTMLElement,
   // CCTV Modal
   cctvModal: document.getElementById("cctvModal") as HTMLElement,
   cctvModalOverlay: document.getElementById("cctvModalOverlay") as HTMLElement,
@@ -193,7 +243,7 @@ function initTheme(): void {
     localStorage.setItem("theme", next);
     document.cookie = `theme=${next}; path=/; max-age=31536000; SameSite=Lax`;
     updateThemeIcon(next);
-    if (state.tileLayer) {
+    if (state.tileLayer && state.currentBasemap === "carto") {
       state.tileLayer.setUrl(getCartoTileUrl(next));
     }
   });
@@ -236,15 +286,12 @@ function initMap(): void {
   state.map = L.map("radarMap", {
     zoomControl: false,
     attributionControl: false,
-  }).setView([state.currentLat, state.currentLon], 14);
+  }).setView([state.currentLat, state.currentLon], 16);
 
-  L.control.zoom({ position: "bottomright" }).addTo(state.map);
-  const initialTheme = document.documentElement.getAttribute("data-theme") || "dark";
-  state.tileLayer = L.tileLayer(getCartoTileUrl(initialTheme), {
-    attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
-    maxZoom: 19,
-    subdomains: "abcd",
-  }).addTo(state.map);
+  L.control.zoom({ position: "topright" }).addTo(state.map);
+
+  const cfg = BASEMAP_TILES[state.currentBasemap];
+  state.tileLayer = L.tileLayer(cfg.url, cfg.options).addTo(state.map);
 
   // User pulse marker
   const userIcon = L.divIcon({
@@ -262,7 +309,51 @@ function initMap(): void {
     hotspots: L.layerGroup().addTo(state.map),
     events: L.layerGroup().addTo(state.map),
     cctvs: L.layerGroup().addTo(state.map),
+    metros: L.layerGroup().addTo(state.map),
   };
+}
+
+function switchBasemap(type: BasemapType): void {
+  if (!state.map || state.currentBasemap === type) return;
+  state.currentBasemap = type;
+
+  if (state.tileLayer) {
+    state.map.removeLayer(state.tileLayer);
+  }
+
+  const cfg = BASEMAP_TILES[type];
+  state.tileLayer = L.tileLayer(cfg.url, cfg.options).addTo(state.map);
+  state.tileLayer.bringToBack();
+
+  document.querySelectorAll(".basemap-pill").forEach((pill) => {
+    const pType = pill.getAttribute("data-basemap") || pill.getAttribute("data-layer");
+    if (pType === type) {
+      pill.classList.add("active");
+    } else {
+      pill.classList.remove("active");
+    }
+  });
+
+  const names: Record<BasemapType, string> = {
+    nlsc: "🇹🇼 臺灣通用圖 (含地標大樓與捷運出口)",
+    osm: "🗺️ OpenStreetMap 街道圖",
+    carto: "🎨 CARTO 極簡風格圖",
+  };
+  showToast(`底圖已切換：${names[type]}`);
+}
+
+function computeDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371000;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c);
 }
 
 // ==========================================
@@ -276,6 +367,19 @@ async function loadRadarData(): Promise<void> {
   DOM.locCoordsText.textContent = `${state.currentLat.toFixed(4)}° N, ${state.currentLon.toFixed(4)}° E`;
 
   try {
+    // 1. Calculate nearest metro stations based on current user position
+    const rawMetros = metroStationsData as Array<{ id: string; name: string; op: string; lat: number; lon: number; city: string }>;
+    const allMetrosWithDist = rawMetros.map((st) => ({
+      ...st,
+      distanceMeters: computeDistance(state.currentLat, state.currentLon, st.lat, st.lon),
+    })).sort((a, b) => a.distanceMeters - b.distanceMeters);
+
+    let nearby = allMetrosWithDist.filter((st) => st.distanceMeters <= 3500).slice(0, 10);
+    if (nearby.length === 0 && allMetrosWithDist.length > 0 && allMetrosWithDist[0].distanceMeters <= 8000) {
+      nearby = allMetrosWithDist.slice(0, 3);
+    }
+    state.nearbyMetros = nearby;
+
     const res = await fetch(`/api/eagle-eye?lat=${state.currentLat}&lon=${state.currentLon}&radius=6000`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data: EagleEyeApiResponse = await res.json();
@@ -350,6 +454,7 @@ function renderMapMarkers(data: EagleEyeApiResponse): void {
   state.layers.hotspots.clearLayers();
   state.layers.events.clearLayers();
   state.layers.cctvs.clearLayers();
+  state.layers.metros.clearLayers();
   state.markersMap.clear();
 
   // Update user marker position
@@ -431,6 +536,29 @@ function renderMapMarkers(data: EagleEyeApiResponse): void {
         btn.addEventListener("click", () => openCctvModal(cctv));
       }
     });
+  });
+
+  // 4. Metro Station Markers
+  state.nearbyMetros.forEach((metro) => {
+    const icon = L.divIcon({
+      className: "radar-marker-wrap",
+      html: `<div class="radar-metro-marker"><span class="marker-emoji">🚇</span><span class="marker-metro-name">${metro.name}</span></div>`,
+      iconSize: [68, 28],
+      iconAnchor: [34, 14],
+    });
+
+    const popupHtml = `
+      <div class="map-popup-card">
+        <div class="popup-badge badge-metro">🚇 ${metro.op} • 捷運車站</div>
+        <h4 class="popup-title">${metro.name} 站 (${metro.id})</h4>
+        <p class="popup-stats">距您約 <b>${formatDistance(metro.distanceMeters)}</b> • 徒步約 <b>${Math.max(1, Math.round(metro.distanceMeters / 80))}</b> 分鐘</p>
+        <p class="popup-tip">具備顯著捷運標誌牌、出入口與主要交通節點，可協助您明確辨識目前位置與周邊方向。</p>
+        <a href="https://www.google.com/maps/dir/?api=1&destination=${metro.lat},${metro.lon}" target="_blank" class="popup-nav-link">🧭 Google 路線導航</a>
+      </div>
+    `;
+
+    const marker = L.marker([metro.lat, metro.lon], { icon }).bindPopup(popupHtml).addTo(state.layers!.metros);
+    state.markersMap.set(`metro-${metro.id}`, marker);
   });
 }
 
@@ -599,6 +727,48 @@ function renderCards(data: EagleEyeApiResponse, mode: FilterMode): void {
     });
   }
 
+  // 4. Render Metro Stations
+  if (mode === "all" || mode === "metro") {
+    state.nearbyMetros.forEach((metro) => {
+      const card = document.createElement("div");
+      card.className = "radar-card card-metro interactive-card";
+      card.innerHTML = `
+        <div class="card-header-row">
+          <div class="card-badge-box">
+            <span class="badge-metro-tag">🚇 ${metro.op}</span>
+            <span class="badge-metro-id">${metro.id}</span>
+          </div>
+          <span class="card-distance">${formatDistance(metro.distanceMeters)}</span>
+        </div>
+        <h3 class="card-title">${metro.name} 站</h3>
+        <p class="card-address">📍 捷運重要地標 • 徒步約 ${Math.max(1, Math.round(metro.distanceMeters / 80))} 分鐘 (${metro.city})</p>
+        <div class="card-tip-box" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.25);">
+          <span class="tip-icon">🗺️</span>
+          <p class="tip-text" style="color: var(--text-secondary);">附近有顯著捷運標誌牌、出入口與知名大樓，可作為辨識您目前所在地的核心基準點。</p>
+        </div>
+        <div class="card-footer-row card-actions-flex">
+          <button class="btn btn-secondary btn-sm locate-marker-btn" data-id="metro-${metro.id}">
+            <span>📍 查看地圖位置</span>
+          </button>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=${metro.lat},${metro.lon}" target="_blank" class="btn btn-outline btn-sm nav-link-btn" onclick="event.stopPropagation()">
+            <span>🧭 導航前往</span>
+          </a>
+        </div>
+      `;
+      card.addEventListener("click", () => {
+        panToMarker(`metro-${metro.id}`, metro.lat, metro.lon);
+      });
+      const locBtn = card.querySelector(".locate-marker-btn");
+      if (locBtn) {
+        locBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          panToMarker(`metro-${metro.id}`, metro.lat, metro.lon);
+        });
+      }
+      container.appendChild(card);
+    });
+  }
+
   if (container.children.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
@@ -614,7 +784,12 @@ function updateTabCounts(data: EagleEyeApiResponse): void {
   DOM.countHotspot.textContent = String(data.dangerHotspots.length);
   DOM.countEvent.textContent = String(data.liveEvents.length);
   DOM.countCctv.textContent = String(data.cctvs.length);
-  DOM.countAll.textContent = String(data.dangerHotspots.length + data.liveEvents.length + data.cctvs.length);
+  if (DOM.countMetro) {
+    DOM.countMetro.textContent = String(state.nearbyMetros.length);
+  }
+  DOM.countAll.textContent = String(
+    data.dangerHotspots.length + data.liveEvents.length + data.cctvs.length + state.nearbyMetros.length
+  );
 }
 
 // ==========================================
@@ -677,10 +852,101 @@ function closeCctvModal(): void {
 }
 
 // ==========================================
+// Toast Notifications & Radar Map Lock
+// ==========================================
+
+let toastTimer: number | null = null;
+
+function showToast(message: string): void {
+  if (!DOM.toast || !DOM.toastMsg) return;
+  DOM.toastMsg.textContent = message;
+  DOM.toast.style.display = "flex";
+  // Force reflow for transition
+  void DOM.toast.offsetHeight;
+  DOM.toast.classList.add("toast-show");
+
+  if (toastTimer) window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => {
+    DOM.toast?.classList.remove("toast-show");
+    window.setTimeout(() => {
+      if (DOM.toast) DOM.toast.style.display = "none";
+    }, 250);
+  }, 2200);
+}
+
+function setRadarMapLocked(locked: boolean, notify = true): void {
+  state.isMapLocked = locked;
+  if (!state.map) return;
+
+  if (locked) {
+    state.map.dragging.disable();
+    state.map.touchZoom.disable();
+    state.map.doubleClickZoom.disable();
+    state.map.scrollWheelZoom.disable();
+    state.map.boxZoom.disable();
+    state.map.keyboard.disable();
+
+    if (DOM.lockRadarMapBtn) {
+      DOM.lockRadarMapBtn.innerHTML = "🔒";
+      DOM.lockRadarMapBtn.classList.add("locked");
+      DOM.lockRadarMapBtn.title = "雷達地圖已鎖定防誤觸 (點擊解鎖)";
+      DOM.lockRadarMapBtn.setAttribute("aria-label", "雷達地圖已鎖定防誤觸 (點擊解鎖)");
+    }
+    if (DOM.radarMapWrapper) {
+      DOM.radarMapWrapper.classList.add("is-locked");
+    }
+    if (notify) {
+      showToast("🔒 雷達視角已固定，滑動頁面不誤觸");
+    }
+  } else {
+    state.map.dragging.enable();
+    state.map.touchZoom.enable();
+    state.map.doubleClickZoom.enable();
+    state.map.scrollWheelZoom.enable();
+    state.map.boxZoom.enable();
+    state.map.keyboard.enable();
+
+    if (DOM.lockRadarMapBtn) {
+      DOM.lockRadarMapBtn.innerHTML = "🔓";
+      DOM.lockRadarMapBtn.classList.remove("locked");
+      DOM.lockRadarMapBtn.title = "點擊鎖定雷達地圖 (防止滑動誤觸)";
+      DOM.lockRadarMapBtn.setAttribute("aria-label", "點擊鎖定雷達地圖 (防止滑動誤觸)");
+    }
+    if (DOM.radarMapWrapper) {
+      DOM.radarMapWrapper.classList.remove("is-locked");
+    }
+    if (notify) {
+      showToast("🔓 雷達地圖已解鎖，可自由移動縮放");
+    }
+  }
+}
+
+// ==========================================
 // Event Listeners
 // ==========================================
 
 function setupEventListeners(): void {
+  // Basemap Switcher
+  document.querySelectorAll(".basemap-pill").forEach((pill) => {
+    pill.addEventListener("click", () => {
+      const type = (pill.getAttribute("data-basemap") || pill.getAttribute("data-layer")) as BasemapType;
+      if (type) {
+        switchBasemap(type);
+      }
+    });
+  });
+
+  // Lock Map Button
+  DOM.lockRadarMapBtn?.addEventListener("click", () => {
+    setRadarMapLocked(!state.isMapLocked);
+  });
+
+  // Center Radar Location Button
+  DOM.centerRadarMeBtn?.addEventListener("click", () => {
+    if (state.map) {
+      state.map.flyTo([state.currentLat, state.currentLon], 15, { duration: 0.8 });
+    }
+  });
   // Mode Tabs
   document.querySelectorAll(".tabs-segmented .tab-btn").forEach((btn) => {
     btn.addEventListener("click", () => {

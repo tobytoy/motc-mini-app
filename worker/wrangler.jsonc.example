@@ -10,19 +10,54 @@
     "enabled": true,
     "head_sampling_rate": 1.0
   },
+  // Default Environment: Development
   "vars": {
-    "ENVIRONMENT": "production",
-    "LINE_CHANNEL_ID": "your_line_channel_id_here",
+    "ENVIRONMENT": "development",
+    "LINE_CHANNEL_ID": "your_dev_channel_id",
+    "DEV_LINE_CHANNEL_ID": "your_dev_channel_id",
+    "PROD_LINE_CHANNEL_ID": "your_prod_channel_id",
     "TDX_PORTAL_URL": "https://tdx.transportdata.tw/",
     "MINI_APP_URL": "https://motc-mini-dog.pages.dev/",
     "PROJECT_MGMT_URL": "https://ai.studio/apps/your-app-id",
-    "DEMO_APP_URL": "https://ai.studio/apps/your-demo-app-id",
+    "DEMO_APP_URL": "https://miniapp.line.me/your-demo-liff-id",
     "GOOGLE_FORM_URL": "https://docs.google.com/forms/d/e/your-form-id/viewform",
     "FEEDBACK_FORM_URL": "https://docs.google.com/forms/d/e/your-feedback-form-id/viewform",
-    "DETECTIVE_LIFF_URL": "https://miniapp.line.me/your-liff-id",
+    "DETECTIVE_LIFF_URL": "https://miniapp.line.me/your-detective-liff-id",
     "DETECTIVE_WEB_URL": "https://motc-mini-dog.pages.dev/search",
+    "EAGLE_EYE_LIFF_URL": "https://miniapp.line.me/your-eagle-eye-liff-id",
+    "EAGLE_EYE_WEB_URL": "https://motc-mini-dog.pages.dev/eagle-eye",
+    "SENIOR_CARE_LIFF_URL": "https://miniapp.line.me/your-senior-care-liff-id",
+    "GUARDIAN_WEB_URL": "https://motc-mini-dog.pages.dev/guardian",
     "APPS_SCRIPT_AUTH_URL": "https://script.google.com/macros/s/your-app-script-id/exec",
     "KNOWN_INTERNAL_USER_IDS": "",
-    "NEEDLE_API_URL": "http://127.0.0.1:8000/route"
+    "NEEDLE_API_URL": "http://127.0.0.1:8000/route",
+    "FEATURE_SILVER_CARE_ENABLED": "true",
+    "FEATURE_EAGLE_EYE_ENABLED": "true",
+    "FEATURE_DETECTIVE_ENABLED": "true",
+    "FEATURE_PROJECTS_ENABLED": "true"
+  },
+  "env": {
+    "dev": {
+      "name": "motc-line-bot-worker-dev",
+      "vars": {
+        "ENVIRONMENT": "development",
+        "LINE_CHANNEL_ID": "your_dev_channel_id",
+        "FEATURE_SILVER_CARE_ENABLED": "true",
+        "FEATURE_EAGLE_EYE_ENABLED": "true",
+        "FEATURE_DETECTIVE_ENABLED": "true",
+        "FEATURE_PROJECTS_ENABLED": "true"
+      }
+    },
+    "prod": {
+      "name": "motc-line-bot-worker",
+      "vars": {
+        "ENVIRONMENT": "production",
+        "LINE_CHANNEL_ID": "your_prod_channel_id",
+        "FEATURE_SILVER_CARE_ENABLED": "false",
+        "FEATURE_EAGLE_EYE_ENABLED": "true",
+        "FEATURE_DETECTIVE_ENABLED": "true",
+        "FEATURE_PROJECTS_ENABLED": "true"
+      }
+    }
   }
 }

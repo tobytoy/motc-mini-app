@@ -6,16 +6,46 @@ import type { NearbyResponse } from "../functions/api/nearby";
 // Types & State
 // ==========================================
 
+export type BasemapType = "nlsc" | "osm" | "carto";
+
+export const BASEMAP_TILES = {
+  nlsc: {
+    url: "https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}",
+    options: {
+      maxZoom: 20,
+      attribution: '&copy; <a href="https://maps.nlsc.gov.tw/" target="_blank">國土測繪圖資服務雲</a>',
+    },
+  },
+  osm: {
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    options: {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    },
+  },
+  carto: {
+    url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=cb1_34ly_1_0922d1c895d7b40fd9f335f0",
+    options: {
+      maxZoom: 19,
+      subdomains: "abcd",
+      attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
+    },
+  },
+};
+
 interface AppState {
   currentLat: number;
   currentLon: number;
   locationName: string;
   activeFilter: "all" | "bike" | "parking" | "bus";
+  currentBasemap: BasemapType;
   data: NearbyResponse | null;
   map: L.Map | null;
   userMarker: L.Marker | null;
   facilityLayerGroup: L.LayerGroup | null;
+  tileLayer: L.TileLayer | null;
   markersMap: Map<string, L.Marker>;
+  isMapLocked: boolean;
 }
 
 const DEFAULT_CONFIG = {
@@ -30,11 +60,14 @@ const state: AppState = {
   currentLon: DEFAULT_CONFIG.DEFAULT_LON,
   locationName: DEFAULT_CONFIG.DEFAULT_LOCATION_NAME,
   activeFilter: "all",
+  currentBasemap: "nlsc",
   data: null,
   map: null,
   userMarker: null,
   facilityLayerGroup: null,
+  tileLayer: null,
   markersMap: new Map(),
+  isMapLocked: false,
 };
 
 // ==========================================
@@ -59,7 +92,12 @@ const DOM = {
   adviceDetail: document.getElementById("adviceDetail") as HTMLElement,
   adviceTypeBadge: document.getElementById("adviceTypeBadge") as HTMLElement,
   mapLoader: document.getElementById("mapLoader") as HTMLElement,
+  mapContainer: document.getElementById("mapContainer") as HTMLElement,
+  mapTip: document.getElementById("mapTip") as HTMLElement,
+  lockMapBtn: document.getElementById("lockMapBtn") as HTMLButtonElement,
   centerMeBtn: document.getElementById("centerMeBtn") as HTMLButtonElement,
+  toast: document.getElementById("toast") as HTMLElement,
+  toastMsg: document.getElementById("toastMsg") as HTMLElement,
   countAll: document.getElementById("countAll") as HTMLElement,
   countBike: document.getElementById("countBike") as HTMLElement,
   countParking: document.getElementById("countParking") as HTMLElement,
@@ -113,10 +151,8 @@ function initLeafletMap(): void {
 
   L.control.zoom({ position: "topright" }).addTo(map);
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-  }).addTo(map);
+  const cfg = BASEMAP_TILES[state.currentBasemap];
+  state.tileLayer = L.tileLayer(cfg.url, cfg.options).addTo(map);
 
   const facilityGroup = L.layerGroup().addTo(map);
 
@@ -140,6 +176,35 @@ function initLeafletMap(): void {
     map.invalidateSize();
     if (DOM.mapLoader) DOM.mapLoader.style.display = "none";
   }, 200);
+}
+
+function switchBasemap(type: BasemapType): void {
+  if (!state.map || state.currentBasemap === type) return;
+  state.currentBasemap = type;
+
+  if (state.tileLayer) {
+    state.map.removeLayer(state.tileLayer);
+  }
+
+  const cfg = BASEMAP_TILES[type];
+  state.tileLayer = L.tileLayer(cfg.url, cfg.options).addTo(state.map);
+  state.tileLayer.bringToBack();
+
+  document.querySelectorAll(".basemap-pill").forEach((pill) => {
+    const pType = pill.getAttribute("data-basemap") || pill.getAttribute("data-layer");
+    if (pType === type) {
+      pill.classList.add("active");
+    } else {
+      pill.classList.remove("active");
+    }
+  });
+
+  const names: Record<BasemapType, string> = {
+    nlsc: "🇹🇼 臺灣通用圖 (含地標大樓與捷運出口)",
+    osm: "🗺️ OpenStreetMap 街道圖",
+    carto: "🎨 CARTO 極簡風格圖",
+  };
+  showToast(`底圖已切換：${names[type]}`);
 }
 
 // ==========================================
@@ -655,10 +720,96 @@ function handleGetLocation(): void {
 }
 
 // ==========================================
-// 6. Event Listeners & Bootstrapping
+// 6. Toast Notifications & Map Lock Control
+// ==========================================
+
+let toastTimer: number | null = null;
+
+function showToast(message: string): void {
+  if (!DOM.toast || !DOM.toastMsg) return;
+  DOM.toastMsg.textContent = message;
+  DOM.toast.style.display = "flex";
+  // Force reflow for CSS transition
+  void DOM.toast.offsetHeight;
+  DOM.toast.classList.add("toast-show");
+
+  if (toastTimer) window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => {
+    DOM.toast?.classList.remove("toast-show");
+    window.setTimeout(() => {
+      if (DOM.toast) DOM.toast.style.display = "none";
+    }, 250);
+  }, 2200);
+}
+
+function setMapLocked(locked: boolean, notify = true): void {
+  state.isMapLocked = locked;
+  if (!state.map) return;
+
+  if (locked) {
+    state.map.dragging.disable();
+    state.map.touchZoom.disable();
+    state.map.doubleClickZoom.disable();
+    state.map.scrollWheelZoom.disable();
+    state.map.boxZoom.disable();
+    state.map.keyboard.disable();
+
+    if (DOM.lockMapBtn) {
+      DOM.lockMapBtn.innerHTML = "🔒";
+      DOM.lockMapBtn.classList.add("locked");
+      DOM.lockMapBtn.title = "地圖已鎖定防誤觸 (點擊解鎖)";
+      DOM.lockMapBtn.setAttribute("aria-label", "地圖已鎖定防誤觸 (點擊解鎖)");
+    }
+    if (DOM.mapContainer) {
+      DOM.mapContainer.classList.add("is-locked");
+    }
+    if (DOM.mapTip) {
+      DOM.mapTip.textContent = "🔒 地圖已固定（防滑動誤觸，點鎖頭解鎖）";
+    }
+    if (notify) {
+      showToast("🔒 地圖視角已固定，滑動頁面不誤觸");
+    }
+  } else {
+    state.map.dragging.enable();
+    state.map.touchZoom.enable();
+    state.map.doubleClickZoom.enable();
+    state.map.scrollWheelZoom.enable();
+    state.map.boxZoom.enable();
+    state.map.keyboard.enable();
+
+    if (DOM.lockMapBtn) {
+      DOM.lockMapBtn.innerHTML = "🔓";
+      DOM.lockMapBtn.classList.remove("locked");
+      DOM.lockMapBtn.title = "點擊鎖定地圖 (防止滑動誤觸)";
+      DOM.lockMapBtn.setAttribute("aria-label", "點擊鎖定地圖 (防止滑動誤觸)");
+    }
+    if (DOM.mapContainer) {
+      DOM.mapContainer.classList.remove("is-locked");
+    }
+    if (DOM.mapTip) {
+      DOM.mapTip.textContent = "可拖曳或點選地標圖示導航";
+    }
+    if (notify) {
+      showToast("🔓 地圖已解鎖，可自由移動縮放");
+    }
+  }
+}
+
+// ==========================================
+// 7. Event Listeners & Bootstrapping
 // ==========================================
 
 function setupEventListeners(): void {
+  // Basemap Switcher
+  document.querySelectorAll(".basemap-pill").forEach((pill) => {
+    pill.addEventListener("click", () => {
+      const type = (pill.getAttribute("data-basemap") || pill.getAttribute("data-layer")) as BasemapType;
+      if (type) {
+        switchBasemap(type);
+      }
+    });
+  });
+
   DOM.locateBtn.addEventListener("click", handleGetLocation);
 
   DOM.refreshBtn.addEventListener("click", () => {
@@ -669,6 +820,10 @@ function setupEventListeners(): void {
     if (state.map) {
       state.map.flyTo([state.currentLat, state.currentLon], 16, { duration: 0.8 });
     }
+  });
+
+  DOM.lockMapBtn?.addEventListener("click", () => {
+    setMapLocked(!state.isMapLocked);
   });
 
   DOM.themeToggleBtn.addEventListener("click", toggleTheme);

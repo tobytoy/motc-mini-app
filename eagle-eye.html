@@ -90,15 +90,33 @@
         <!-- Interactive Radar Map -->
         <section class="map-section">
           <div class="map-header">
-            <span class="map-title">🗺️ 周邊防禦雷達圖臺</span>
+            <div class="map-header-top">
+              <span class="map-title">🗺️ 周邊防禦雷達圖臺</span>
+              <!-- Basemap Switcher -->
+              <div class="basemap-bar">
+                <button class="basemap-pill active" data-basemap="nlsc" data-layer="nlsc" title="內政部國土測繪臺灣通用電子地圖（含完整建築物與地標名稱）">🇹🇼 臺灣通用圖</button>
+                <button class="basemap-pill" data-basemap="osm" data-layer="osm" title="OpenStreetMap 繁中街道圖">🗺️ 街道圖</button>
+                <button class="basemap-pill" data-basemap="carto" data-layer="carto" title="CARTO 極簡風格圖">🎨 極簡圖</button>
+              </div>
+            </div>
             <div class="map-legend">
               <span class="legend-item"><span class="legend-dot dot-user"></span>目前位置</span>
+              <span class="legend-item"><span class="legend-dot dot-metro"></span>捷運站點</span>
               <span class="legend-item"><span class="legend-dot dot-danger"></span>肇事熱點</span>
               <span class="legend-item"><span class="legend-dot dot-event"></span>突發事件</span>
               <span class="legend-item"><span class="legend-dot dot-cctv"></span>即時 CCTV</span>
             </div>
           </div>
-          <div id="radarMap" class="radar-map-container"></div>
+          <div id="radarMapWrapper" class="map-wrapper radar-map-wrapper">
+            <div id="radarMap" class="radar-map-container"></div>
+            <!-- Lock State Badge -->
+            <div id="radarLockBadge" class="map-lock-badge">🔒 視角已固定（防滑動誤觸）</div>
+            <!-- Floating Map Controls -->
+            <div class="floating-controls">
+              <button id="lockRadarMapBtn" class="float-btn" title="鎖定地圖 (防止滑動誤觸)" aria-label="鎖定/解鎖地圖">🔓</button>
+              <button id="centerRadarMeBtn" class="float-btn" title="回到定位中心" aria-label="回到定位中心">📍</button>
+            </div>
+          </div>
         </section>
 
         <!-- Segmented Mode Tabs -->
@@ -107,6 +125,10 @@
             <button class="tab-btn active" data-mode="all">
               <span>🌟 全部雷達</span>
               <span id="countAll" class="tab-count">--</span>
+            </button>
+            <button class="tab-btn" data-mode="metro">
+              <span>🚇 捷運站</span>
+              <span id="countMetro" class="tab-count">--</span>
             </button>
             <button class="tab-btn" data-mode="hotspot">
               <span>🚨 肇事熱點</span>
@@ -169,6 +191,11 @@
         <p>資料來源：交通部 TDX 運輸資料流通服務 • 國道公路局 • 道路事故熱點資料庫</p>
         <p class="footer-meta">LINE Mini App • motc-mini-eagle-eye</p>
       </footer>
+    </div>
+
+    <!-- Global Toast Notification -->
+    <div id="toast" class="toast-notification" style="display: none;">
+      <span id="toastMsg"></span>
     </div>
 
     <!-- Script Entrypoint -->

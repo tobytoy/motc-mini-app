@@ -130,9 +130,21 @@ export class NeedleClassifier {
       };
     }
 
+    // Web Portal (免登入 LINE 網頁版入口大廳)
+    if (
+      /^(web|網頁|網頁版|瀏覽器|web-?portal|portal|免登入)$/i.test(lower) ||
+      /(網頁版|網頁入口|瀏覽器開啟|免登入)/i.test(lower)
+    ) {
+      return {
+        tool: "show_web_portal",
+        confidence: 1.0,
+        reasoning: "Matched show_web_portal pattern"
+      };
+    }
+
     // 5. Unified Project Hub (內部與外部專案系統，依權限動態分流)
     if (
-      /^(project|專案|項目管理|專案管理|外部|內部|科資司|系統|平台|展示|資源|internal|links|web|demo|yolo|yolo26|opendata|語料|seo|市場|市場分析|marketpulse|oss|項目監測|ossradar|命理|sharenote|分享訊息|okr|ogsm|目標管理|雙引擎)$/i.test(lower) ||
+      /^(project|專案|項目管理|專案管理|外部|內部|科資司|系統|平台|展示|資源|internal|links|demo|yolo|yolo26|opendata|語料|seo|市場|市場分析|marketpulse|oss|項目監測|ossradar|命理|sharenote|分享訊息|okr|ogsm|目標管理|雙引擎)$/i.test(lower) ||
       /(專案|項目管理|外部系統|內部專案|大數據平台|系統清單|內部系統|展示平台|demo|開發階段|yolo|yolo26|opendata|開放語料|seo|全球市場|marketpulse|項目監測|ossradar|命理工作室|sharenote|分享訊息|okr|ogsm|目標管理|雙引擎)/i.test(lower)
     ) {
       return {
@@ -141,26 +153,16 @@ export class NeedleClassifier {
         reasoning: "Matched show_projects pattern"
       };
     }
-    // 5. Google Form Test Application
+
+    // 6. Unified Service Form (表單專區：申請內部測試 ＆ 填寫意見回報，包含 /form, /申請, /意見 等別名)
     if (
-      /^(申請|測試申請|測試|開通|開通測試|form|googleform|表單|填表單)$/i.test(lower) ||
-      /(申請測試|開通測試|測試表單|填寫表單|google\s*表單)/i.test(lower)
+      /^(form|申請|測試申請|測試|開通|開通測試|googleform|表單|填表單|feedback|意見|回報|建議|意見回復|意見回覆|反映|客訴|問題回報)$/i.test(lower) ||
+      /(申請測試|開通測試|測試表單|填寫表單|google\s*表單|意見回復|意見回覆|問題回報|填寫意見|提供建議|服務表單)/i.test(lower)
     ) {
       return {
-        tool: "apply_test",
+        tool: "show_unified_form",
         confidence: 1.0,
-        reasoning: "Matched apply_test pattern"
-      };
-    }
-    // 6. Feedback Form (意見回復單)
-    if (
-      /^(feedback|意見|回報|建議|意見回復|意見回覆|反映|客訴|問題回報)$/i.test(lower) ||
-      /(意見回復|意見回覆|問題回報|填寫意見|提供建議)/i.test(lower)
-    ) {
-      return {
-        tool: "submit_feedback",
-        confidence: 1.0,
-        reasoning: "Matched submit_feedback pattern"
+        reasoning: "Matched show_unified_form pattern"
       };
     }
 

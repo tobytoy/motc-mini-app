@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
 import { app } from "../src/index";
 import { generateLineSignature, verifyLineSignature } from "../src/line/verifier";
+import { verifyLineIdToken } from "../src/line/jwt";
 import { NeedleClassifier } from "../src/classifier/needle";
 import {
   createTdxFlexMessage,
   createMiniAppFlexMessage,
+  createWebPortalFlexMessage,
+  createUnifiedFormFlexMessage,
   createWhoAreYouFlexMessage,
   createHelpFlexMessage,
   createFormFlexMessage,
@@ -63,15 +66,17 @@ async function runTests() {
     { input: "/項目管理", expected: "show_projects" },
     { input: "/help", expected: "help" },
     { input: "/說明", expected: "help" },
-    { input: "/申請", expected: "apply_test" },
-    { input: "/測試", expected: "apply_test" },
-    { input: "/form", expected: "apply_test" },
+    { input: "/申請", expected: "show_unified_form" },
+    { input: "/測試", expected: "show_unified_form" },
+    { input: "/form", expected: "show_unified_form" },
+    { input: "/web", expected: "show_web_portal" },
+    { input: "/網頁", expected: "show_web_portal" },
     { input: "/search", expected: "show_detective" },
     { input: "/偵探", expected: "show_detective" },
     { input: "/api", expected: "show_detective" },
-    { input: "/feedback", expected: "submit_feedback" },
-    { input: "/意見", expected: "submit_feedback" },
-    { input: "/回報", expected: "submit_feedback" },
+    { input: "/feedback", expected: "show_unified_form" },
+    { input: "/意見", expected: "show_unified_form" },
+    { input: "/回報", expected: "show_unified_form" },
     { input: "/外部", expected: "show_projects" },
     { input: "/資源", expected: "show_projects" },
     { input: "/展示", expected: "show_projects" },
@@ -103,10 +108,21 @@ async function runTests() {
   assert.equal(tdxMsg.altText, "🚍 TDX 交通部運輸資料流通服務官網");
   assert.ok(JSON.stringify(tdxMsg).includes("https://tdx.transportdata.tw/"));
 
-  const miniAppMsg = createMiniAppFlexMessage(MOCK_ENV.MINI_APP_URL) as LineFlexMessage;
+  const miniAppMsg = createMiniAppFlexMessage() as LineFlexMessage;
   assert.equal(miniAppMsg.type, "flex");
-  assert.ok(miniAppMsg.altText.includes("三旗艦"));
-  assert.ok(JSON.stringify(miniAppMsg).includes("https://motc-mini-dog.pages.dev/"));
+  assert.ok(miniAppMsg.altText.includes("四大旗艦"));
+  assert.ok(JSON.stringify(miniAppMsg).includes("2011479506-1DIDNGJQ"));
+
+  const webMsg = createWebPortalFlexMessage({
+    trafficWebUrl: "https://motc-mini-dog.pages.dev/",
+    eagleEyeWebUrl: "https://motc-mini-dog.pages.dev/eagle-eye"
+  }) as LineFlexMessage;
+  assert.equal(webMsg.type, "flex");
+  assert.ok(webMsg.altText.includes("網頁版"));
+
+  const unifiedFormMsg = createUnifiedFormFlexMessage("https://form.test", "https://feedback.test", "FB-20260914-1234-ABCD") as LineFlexMessage;
+  assert.equal(unifiedFormMsg.type, "flex");
+  assert.ok(unifiedFormMsg.altText.includes("FB-20260914-1234-ABCD"));
 
   const allProjectsMsg = createAllInclusiveProjectsFlexMessage("王季豪") as LineFlexMessage;
   assert.equal(allProjectsMsg.type, "flex");
@@ -246,7 +262,87 @@ async function runTests() {
     props: {}
   } as unknown as ExecutionContext);
   assert.equal(okRes.status, 200);
-  console.log("  ✓ POST /webhook with valid signature returned 200");
+  console.log("  ✓ POST /webhook with valid signature returned 200\n");
+
+  console.log("=== [5] Testing LINE LIFF ID Token (JWT) Verifier ===");
+  const helperCreateJwt = (payload: Record<string, unknown>) => {
+    const header = { alg: "HS256", typ: "JWT" };
+    const b64 = (obj: Record<string, unknown>) =>
+      Buffer.from(JSON.stringify(obj))
+        .toString("base64")
+        .replace(/=/g, "")
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_");
+    return `${b64(header)}.${b64(payload)}.mockSig`;
+  };
+
+  const currentSec = Math.floor(Date.now() / 1000);
+  const validToken = helperCreateJwt({
+    iss: "https://access.line.me",
+    sub: "U999888777666555444",
+    aud: "2011556606",
+    exp: currentSec + 3600,
+    name: "王小明"
+  });
+
+  const resValid = await verifyLineIdToken(validToken, "2011556606");
+  assert.equal(resValid.valid, true, "Valid token must pass");
+  assert.equal(resValid.userId, "U999888777666555444");
+  assert.equal(resValid.displayName, "王小明");
+  console.log("  ✓ Valid LIFF ID Token decoded and verified");
+
+  const expiredToken = helperCreateJwt({
+    iss: "https://access.line.me",
+    sub: "U999888777666555444",
+    aud: "2011556606",
+    exp: currentSec - 60
+  });
+  const resExpired = await verifyLineIdToken(expiredToken, "2011556606");
+  assert.equal(resExpired.valid, false, "Expired token must fail");
+  assert.ok(resExpired.error?.includes("expired"));
+  console.log("  ✓ Expired LIFF ID Token correctly rejected");
+
+  const wrongAudToken = helperCreateJwt({
+    iss: "https://access.line.me",
+    sub: "U999888777666555444",
+    aud: "9999999999",
+    exp: currentSec + 3600
+  });
+  const resWrongAud = await verifyLineIdToken(wrongAudToken, "2011556606");
+  assert.equal(resWrongAud.valid, false, "Wrong audience must fail");
+  console.log("  ✓ Wrong audience LIFF ID Token correctly rejected");
+
+  const wrongIssToken = helperCreateJwt({
+    iss: "https://fake-issuer.com",
+    sub: "U999888777666555444",
+    aud: "2011556606",
+    exp: currentSec + 3600
+  });
+  const resWrongIss = await verifyLineIdToken(wrongIssToken, "2011556606");
+  assert.equal(resWrongIss.valid, false, "Wrong issuer must fail");
+  console.log("  ✓ Wrong issuer LIFF ID Token correctly rejected\n");
+
+  console.log("=== [6] Testing Auth & Feature Flag Endpoints ===");
+  const authRes = await app.request("/api/auth/verify", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${validToken}`
+    }
+  }, MOCK_ENV);
+  assert.equal(authRes.status, 200);
+  const authData = await authRes.json() as { valid: boolean; userId: string };
+  assert.equal(authData.valid, true);
+  assert.equal(authData.userId, "U999888777666555444");
+  console.log("  ✓ POST /api/auth/verify returned 200 with verified userId");
+
+  const noTokenRes = await app.request("/api/auth/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({})
+  }, MOCK_ENV);
+  assert.equal(noTokenRes.status, 400);
+  console.log("  ✓ POST /api/auth/verify without token returned 400");
 
   console.log("\n🎉 ALL TESTS PASSED SUCCESSFULLY!");
 }

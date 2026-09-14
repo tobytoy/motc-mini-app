@@ -6,6 +6,8 @@ import { AiRouter } from "../classifier/aiRouter";
 import {
   createTdxFlexMessage,
   createMiniAppFlexMessage,
+  createWebPortalFlexMessage,
+  createUnifiedFormFlexMessage,
   createWhoAreYouFlexMessage,
   createHelpFlexMessage,
   createFormFlexMessage,
@@ -15,8 +17,10 @@ import {
   buildPrefilledFeedbackFormUrl,
   createFeedbackFlexMessage,
   createAllInclusiveProjectsFlexMessage,
+  createExternalProjectsFlexMessage,
   createEagleEyeFlexMessage,
-  createSilverProtectFlexMessage
+  createSilverProtectFlexMessage,
+  createFeatureMaintenanceFlexMessage
 } from "../line/templates";
 
 export async function processLineEvent(event: LineEvent, env: Env): Promise<void> {
@@ -28,6 +32,7 @@ export async function processLineEvent(event: LineEvent, env: Env): Promise<void
 
   const tdxUrl = env.TDX_PORTAL_URL || "https://tdx.transportdata.tw/";
   const miniAppUrl = env.MINI_APP_URL || "https://motc-mini-dog.pages.dev/";
+  const trafficLiffUrl = env.TRAFFIC_LIFF_URL || "https://miniapp.line.me/2011479506-1DIDNGJQ";
   const projectUrl = env.PROJECT_MGMT_URL || "https://ai.studio/apps/0bd118d7-407b-4576-bf5b-e354f697c2cf";
   const demoAppUrl = env.DEMO_APP_URL || "https://ai.studio/apps/1d7b8b11-885e-4bcd-947e-a77325ac06f6?fullscreenApplet=true";
   const detectiveLiffUrl = env.DETECTIVE_LIFF_URL || "https://miniapp.line.me/2011521041-JnfPdXhF";
@@ -105,18 +110,54 @@ export async function processLineEvent(event: LineEvent, env: Env): Promise<void
           break;
 
         case "show_motc_app":
-          await lineClient.reply(replyToken, createMiniAppFlexMessage(miniAppUrl, detectiveLiffUrl, formUrl));
+          await lineClient.reply(
+            replyToken,
+            createMiniAppFlexMessage(trafficLiffUrl, eagleEyeLiffUrl, detectiveLiffUrl, seniorCareLiffUrl)
+          );
+          break;
+
+        case "show_web_portal":
+          await lineClient.reply(
+            replyToken,
+            createWebPortalFlexMessage({
+              trafficWebUrl: miniAppUrl,
+              eagleEyeWebUrl,
+              detectiveWebUrl,
+              guardianWebUrl
+            })
+          );
           break;
 
         case "show_detective":
+          if (env.FEATURE_DETECTIVE_ENABLED === "false") {
+            await lineClient.reply(
+              replyToken,
+              createFeatureMaintenanceFlexMessage("🕵️‍♂️ 資料查詢小偵探升級中", "小偵探服務目前進行資料庫模型升級，敬請期待！")
+            );
+            break;
+          }
           await lineClient.reply(replyToken, createDetectiveFlexMessage(detectiveLiffUrl, detectiveWebUrl));
           break;
 
         case "show_eagle_eye":
+          if (env.FEATURE_EAGLE_EYE_ENABLED === "false") {
+            await lineClient.reply(
+              replyToken,
+              createFeatureMaintenanceFlexMessage("🦅 路安鷹眼雷達維護中", "鷹眼雷達與即時 CCTV 串聯服務升級中，請稍候重試！")
+            );
+            break;
+          }
           await lineClient.reply(replyToken, createEagleEyeFlexMessage(eagleEyeLiffUrl, eagleEyeWebUrl));
           break;
 
         case "show_silver_protect":
+          if (env.FEATURE_SILVER_CARE_ENABLED === "false") {
+            await lineClient.reply(
+              replyToken,
+              createFeatureMaintenanceFlexMessage("👵 銀髮出行守護員即將推出", "銀髮守護員服務正進行正式審核調優，即將於正式版開放！")
+            );
+            break;
+          }
           await lineClient.reply(replyToken, createSilverProtectFlexMessage(seniorCareLiffUrl, guardianWebUrl));
           break;
         case "show_projects": {
@@ -163,12 +204,13 @@ export async function processLineEvent(event: LineEvent, env: Env): Promise<void
           await lineClient.reply(replyToken, createWhoAreYouFlexMessage(urlBundle));
           break;
 
+        case "show_unified_form":
         case "apply_test":
-          await lineClient.reply(replyToken, createFormFlexMessage(formUrl));
-          break;
-
         case "submit_feedback":
-          await lineClient.reply(replyToken, createFeedbackFlexMessage(feedbackTicketId, feedbackFormUrl));
+          await lineClient.reply(
+            replyToken,
+            createUnifiedFormFlexMessage(formUrl, feedbackFormUrl, feedbackTicketId)
+          );
           break;
 
         case "help":

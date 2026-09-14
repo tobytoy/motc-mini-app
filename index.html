@@ -98,8 +98,16 @@
         <!-- Map Container -->
         <section class="map-section">
           <div class="map-header">
-            <span class="section-title">🗺️ 周邊設施即時地圖</span>
-            <span class="map-tip">可拖曳或點選地標圖示導航</span>
+            <div class="map-header-top">
+              <span class="section-title">🗺️ 周邊設施即時地圖</span>
+              <!-- Basemap Switcher -->
+              <div class="basemap-bar">
+                <button class="basemap-pill active" data-basemap="nlsc" data-layer="nlsc" title="內政部國土測繪臺灣通用電子地圖（含完整建築物與地標名稱）">🇹🇼 臺灣通用圖</button>
+                <button class="basemap-pill" data-basemap="osm" data-layer="osm" title="OpenStreetMap 繁中街道圖">🗺️ 街道圖</button>
+                <button class="basemap-pill" data-basemap="carto" data-layer="carto" title="CARTO 極簡風格圖">🎨 極簡圖</button>
+              </div>
+            </div>
+            <span id="mapTip" class="map-tip">可拖曳或點選地標圖示導航</span>
           </div>
           <div id="mapContainer" class="map-wrapper">
             <div id="map"></div>
@@ -107,9 +115,12 @@
               <div class="spinner"></div>
               <span>載入地圖中...</span>
             </div>
+            <!-- Lock State Badge -->
+            <div id="mapLockBadge" class="map-lock-badge">🔒 視角已固定（防滑動誤觸）</div>
             <!-- Floating Map Controls -->
             <div class="floating-controls">
-              <button id="centerMeBtn" class="float-btn" title="回到定位中心">📍</button>
+              <button id="lockMapBtn" class="float-btn" title="鎖定地圖 (防止滑動誤觸)" aria-label="鎖定/解鎖地圖">🔓</button>
+              <button id="centerMeBtn" class="float-btn" title="回到定位中心" aria-label="回到定位中心">📍</button>
             </div>
           </div>
         </section>
@@ -161,6 +172,11 @@
         <p>資料來源：交通部 TDX 運輸資料流通服務 • 中央氣象署 CWA</p>
         <p class="footer-meta">LINE Mini App • motc-mini-dog</p>
       </footer>
+    </div>
+
+    <!-- Global Toast Notification -->
+    <div id="toast" class="toast-notification" style="display: none;">
+      <span id="toastMsg"></span>
     </div>
 
     <!-- Script Entrypoint -->

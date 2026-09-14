@@ -58,6 +58,22 @@ export const BOT_TOOLS: ToolDefinition[] = [
     }
   },
   {
+    name: "show_web_portal",
+    description: "開啟 MOTC 智慧交通網頁版入口大廳 (/web)。提供一般網頁瀏覽器 (Chrome/Safari/Edge) 免登入 LINE 直接瀏覽周邊交通、路安鷹眼、資料小偵探與銀髮代管平台的完整網頁連結",
+    parameters: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "show_unified_form",
+    description: "開啟 MOTC 服務與回報專區線上表單 (/form)。包含「內部測試資格開通申請」與「意見回饋與問題回報 (含專屬工單單號)」雙按鈕與詳細說明",
+    parameters: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
     name: "apply_test",
     description: "開啟 Google 測試開通申請表單 (https://docs.google.com/forms/d/e/1FAIpQLSd84pIjXoYOYO8qAodE6mI-aBfPyMuXoabBWHsw_g2Lu_u6Eg/viewform)，供使用者填寫開通測試資格",
     parameters: {

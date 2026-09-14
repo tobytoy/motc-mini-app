@@ -6,8 +6,16 @@ export const BOT_QUICK_REPLY: LineQuickReply = {
       type: "action",
       action: {
         type: "message",
-        label: "🚦 周邊交通",
+        label: "🚦 Mini App",
         text: "/app"
+      }
+    },
+    {
+      type: "action",
+      action: {
+        type: "message",
+        label: "🌐 網頁版",
+        text: "/web"
       }
     },
     {
@@ -23,7 +31,7 @@ export const BOT_QUICK_REPLY: LineQuickReply = {
       action: {
         type: "message",
         label: "🧓 銀髮守護",
-        text: "/銀髮守護"
+        text: "/silver"
       }
     },
     {
@@ -45,16 +53,9 @@ export const BOT_QUICK_REPLY: LineQuickReply = {
     {
       type: "action",
       action: {
-        type: "location",
-        label: "📍 傳送位置"
-      }
-    },
-    {
-      type: "action",
-      action: {
         type: "message",
-        label: "💬 意見回報",
-        text: "/意見"
+        label: "📝 服務表單",
+        text: "/form"
       }
     },
     {
@@ -308,10 +309,16 @@ export function createTdxFlexMessage(tdxUrl: string = "https://tdx.transportdata
  * 2. 我們的 MOTC Mini App 可愛氣泡 Flex Message
  */
 export function createMiniAppFlexMessage(
-  miniAppUrl: string = "https://motc-mini-dog.pages.dev/",
+  trafficLiffUrl: string = "https://miniapp.line.me/2011479506-1DIDNGJQ",
+  eagleEyeLiffUrl: string = "https://miniapp.line.me/2011551329-VWljb6fv",
   detectiveLiffUrl: string = "https://miniapp.line.me/2011521041-JnfPdXhF",
-  eagleEyeLiffUrl: string = "https://miniapp.line.me/2011551329-VWljb6fv"
+  seniorCareLiffUrl: string = "https://miniapp.line.me/2011556606-KbygvdxR"
 ): OutgoingLineMessage {
+  // Graceful fallback if caller passes web URL as first param
+  const actualTrafficUrl = trafficLiffUrl.startsWith("http") && trafficLiffUrl.includes("miniapp.line.me")
+    ? trafficLiffUrl
+    : "https://miniapp.line.me/2011479506-1DIDNGJQ";
+
   const contents = {
     type: "bubble",
     size: "mega",
@@ -323,14 +330,14 @@ export function createMiniAppFlexMessage(
       contents: [
         {
           type: "text",
-          text: "📱 MOTC 旗艦微應用專區",
+          text: "📱 MOTC 旗艦微應用專區 · LINE Mini App 專屬",
           color: "#CCFBF1",
           size: "xs",
           weight: "bold"
         },
         {
           type: "text",
-          text: "智慧交通三旗艦 Mini App",
+          text: "四大旗艦 LINE Mini App",
           color: "#FFFFFF",
           size: "xl",
           weight: "bold",
@@ -338,7 +345,7 @@ export function createMiniAppFlexMessage(
         },
         {
           type: "text",
-          text: "專為手機打造 · 周邊交通 ＆ 路安鷹眼 ＆ 資料小偵探",
+          text: "專為手機打造 · 點擊直達 · 免下載 · 原生沈浸體驗",
           color: "#99F6E4",
           size: "xs",
           margin: "xs"
@@ -364,13 +371,13 @@ export function createMiniAppFlexMessage(
               type: "box",
               layout: "horizontal",
               contents: [
-                { type: "text", text: "🐶 1. 周邊交通即時資訊助手", size: "xs", weight: "bold", color: "#0F766E", flex: 8 },
-                { type: "text", text: "一鍵出行", size: "xxs", color: "#14B8A6", align: "end", flex: 3 }
+                { type: "text", text: "🚦 1. 周邊交通即時資訊", size: "xs", weight: "bold", color: "#0F766E", flex: 8 },
+                { type: "text", text: "Mini App", size: "xxs", color: "#14B8A6", align: "end", flex: 4 }
               ]
             },
             {
               type: "text",
-              text: "• 🚲 YouBike 2.0/2.0E 車位即時借還\n• 🅿️ 路外停車場即時格位與費率說明\n• 🚌 最近站牌各路線即時進站倒數\n• 🌤️ 氣象署降雨機率與出門帶傘決策",
+              text: "• 🚲 YouBike 2.0/2.0E 即時車位借還\n• 🅿️ 路外停車場格位與費率說明\n• 🚌 最近站牌各路線即時進站倒數\n• 🌤️ 氣象署降雨機率與出門帶傘指引",
               size: "xxs",
               color: "#334155",
               wrap: true
@@ -391,12 +398,12 @@ export function createMiniAppFlexMessage(
               layout: "horizontal",
               contents: [
                 { type: "text", text: "🦅 2. 路安鷹眼即時防禦雷達", size: "xs", weight: "bold", color: "#0284C7", flex: 8 },
-                { type: "text", text: "路況直擊", size: "xxs", color: "#38BDF8", align: "end", flex: 3 }
+                { type: "text", text: "Mini App", size: "xxs", color: "#38BDF8", align: "end", flex: 4 }
               ]
             },
             {
               type: "text",
-              text: "• 🚨 300 大易肇事熱點距離倒數警示\n• ⚡ TDX 即時車禍事故與車道封閉通報\n• 📹 669+ 支即時 CCTV 監視器畫面直擊\n• 🔊 接近危險路段語音主動警報提醒",
+              text: "• 🚨 300 大易肇事熱點距離倒數警示\n• ⚡ TDX 即時車禍事故與車道封閉通報\n• 📹 669+ 支即時 CCTV 監視器直擊\n• 🧭 地圖飛移聚焦與 Google 導航",
               size: "xxs",
               color: "#334155",
               wrap: true
@@ -417,12 +424,38 @@ export function createMiniAppFlexMessage(
               layout: "horizontal",
               contents: [
                 { type: "text", text: "🕵️‍♂️ 3. 資料查詢小偵探", size: "xs", weight: "bold", color: "#4338CA", flex: 8 },
-                { type: "text", text: "數據探勘", size: "xxs", color: "#6366F1", align: "end", flex: 3 }
+                { type: "text", text: "Mini App", size: "xxs", color: "#6366F1", align: "end", flex: 4 }
               ]
             },
             {
               type: "text",
-              text: "• 🔍 全臺 TDX 738+ API 規格即時檢索\n• 🔥 百萬調用量熱門 API 精選推薦\n• 🎙️ 原生 Web Speech 語音輸入搜尋\n• 📋 一鍵複製完整 URL 與 cURL 指令",
+              text: "• 🔍 全臺 TDX 738+ API 規格即時檢索\n• 🔥 百萬調用量熱門 API 精選推薦\n• 🎙️ 原生語音輸入搜尋 ＆ cURL 複製",
+              size: "xxs",
+              color: "#334155",
+              wrap: true
+            }
+          ]
+        },
+        // Mini App 4: 銀髮出行守護員
+        {
+          type: "box",
+          layout: "vertical",
+          backgroundColor: "#FFF1F2",
+          cornerRadius: "md",
+          paddingAll: "md",
+          spacing: "xs",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "🧓 4. 銀髮出行守護員", size: "xs", weight: "bold", color: "#BE123C", flex: 8 },
+                { type: "text", text: "Mini App", size: "xxs", color: "#FB7185", align: "end", flex: 4 }
+              ]
+            },
+            {
+              type: "text",
+              text: "• 👵 樂齡大字體與直覺圖像出行指引\n• 💊 看藥袋智慧辨識 ＆ 常用地點導航\n• 🆘 一鍵緊急求救通報與子女守護",
               size: "xxs",
               color: "#334155",
               wrap: true
@@ -444,8 +477,8 @@ export function createMiniAppFlexMessage(
           height: "sm",
           action: {
             type: "uri",
-            label: "🐶 開啟周邊交通助手",
-            uri: miniAppUrl
+            label: "🚦 開啟周邊交通 Mini App",
+            uri: actualTrafficUrl
           }
         },
         {
@@ -455,7 +488,7 @@ export function createMiniAppFlexMessage(
           height: "sm",
           action: {
             type: "uri",
-            label: "🦅 開啟路安鷹眼雷達",
+            label: "🦅 開啟路安鷹眼 Mini App",
             uri: eagleEyeLiffUrl
           }
         },
@@ -466,8 +499,19 @@ export function createMiniAppFlexMessage(
           height: "sm",
           action: {
             type: "uri",
-            label: "🕵️‍♂️ 開啟資料小偵探",
+            label: "🕵️‍♂️ 開啟資料小偵探 Mini App",
             uri: detectiveLiffUrl
+          }
+        },
+        {
+          type: "button",
+          style: "primary",
+          color: "#E11D48",
+          height: "sm",
+          action: {
+            type: "uri",
+            label: "🧓 開啟銀髮守護 Mini App",
+            uri: seniorCareLiffUrl
           }
         }
       ]
@@ -476,7 +520,224 @@ export function createMiniAppFlexMessage(
 
   return {
     type: "flex",
-    altText: "📱 MOTC 三旗艦 LINE Mini App 專區 (周邊交通 ＆ 鷹眼雷達 ＆ 資料小偵探)",
+    altText: "📱 MOTC 四大旗艦 LINE Mini App 專區 (周邊交通 ＆ 鷹眼 ＆ 偵探 ＆ 銀髮)",
+    contents,
+    quickReply: BOT_QUICK_REPLY
+  };
+}
+
+/**
+ * 2B. 網頁版入口大廳 (/web - 免登入 LINE，電腦/手機瀏覽器直接開啟)
+ */
+export function createWebPortalFlexMessage(urls?: {
+  trafficWebUrl?: string;
+  eagleEyeWebUrl?: string;
+  detectiveWebUrl?: string;
+  guardianWebUrl?: string;
+}): OutgoingLineMessage {
+  const trafficUrl = urls?.trafficWebUrl || "https://motc-mini-dog.pages.dev/";
+  const eagleUrl = urls?.eagleEyeWebUrl || "https://motc-mini-dog.pages.dev/eagle-eye";
+  const detectiveUrl = urls?.detectiveWebUrl || "https://motc-mini-dog.pages.dev/search";
+  const guardianUrl = urls?.guardianWebUrl || "https://motc-mini-dog.pages.dev/guardian";
+
+  const contents = {
+    type: "bubble",
+    size: "mega",
+    header: {
+      type: "box",
+      layout: "vertical",
+      backgroundColor: "#1E293B",
+      paddingAll: "xl",
+      contents: [
+        {
+          type: "text",
+          text: "🌐 MOTC 交通部智慧出行 • 網頁版入口大廳",
+          color: "#94A3B8",
+          size: "xs",
+          weight: "bold"
+        },
+        {
+          type: "text",
+          text: "免登入 LINE · 網頁版入口",
+          color: "#FFFFFF",
+          size: "xl",
+          weight: "bold",
+          margin: "sm"
+        },
+        {
+          type: "text",
+          text: "電腦 / 手機瀏覽器通用 · 免安裝 · 點擊即開",
+          color: "#38BDF8",
+          size: "xs",
+          margin: "xs"
+        }
+      ]
+    },
+    body: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "lg",
+      spacing: "md",
+      contents: [
+        {
+          type: "box",
+          layout: "vertical",
+          backgroundColor: "#F1F5F9",
+          cornerRadius: "md",
+          paddingAll: "md",
+          spacing: "xs",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "🚦 1. 周邊交通即時資訊 (網頁版)", size: "xs", weight: "bold", color: "#0F172A", flex: 8 },
+                { type: "text", text: "免登入", size: "xxs", color: "#0EA5E9", align: "end", flex: 3 }
+              ]
+            },
+            {
+              type: "text",
+              text: "• 🚲 全臺 YouBike 2.0/2.0E 車位即時查詢\n• 🅿️ 路外即時剩餘車位與收費費率\n• 🚌 公車站牌即時進站倒數 ＆ CWA 降雨機率",
+              size: "xxs",
+              color: "#475569",
+              wrap: true
+            }
+          ]
+        },
+        {
+          type: "box",
+          layout: "vertical",
+          backgroundColor: "#F0F9FF",
+          cornerRadius: "md",
+          paddingAll: "md",
+          spacing: "xs",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "🦅 2. 路安鷹眼雷達 (網頁版)", size: "xs", weight: "bold", color: "#0369A1", flex: 8 },
+                { type: "text", text: "免登入", size: "xxs", color: "#0EA5E9", align: "end", flex: 3 }
+              ]
+            },
+            {
+              type: "text",
+              text: "• 🚨 300 大易肇事熱點地圖直擊與語音提示\n• 📹 669+ 支即時 CCTV 監視器畫面與路況事故",
+              size: "xxs",
+              color: "#475569",
+              wrap: true
+            }
+          ]
+        },
+        {
+          type: "box",
+          layout: "vertical",
+          backgroundColor: "#EEF2FF",
+          cornerRadius: "md",
+          paddingAll: "md",
+          spacing: "xs",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "🕵️‍♂️ 3. 資料查詢小偵探 (網頁版)", size: "xs", weight: "bold", color: "#3730A3", flex: 8 },
+                { type: "text", text: "免登入", size: "xxs", color: "#6366F1", align: "end", flex: 3 }
+              ]
+            },
+            {
+              type: "text",
+              text: "• 🔍 全臺 TDX 738+ API 規格與端點即時探勘\n• 📋 一鍵複製完整 API URL 與 cURL 指令語法",
+              size: "xxs",
+              color: "#475569",
+              wrap: true
+            }
+          ]
+        },
+        {
+          type: "box",
+          layout: "vertical",
+          backgroundColor: "#FFF1F2",
+          cornerRadius: "md",
+          paddingAll: "md",
+          spacing: "xs",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "💻 4. 銀髮出行守護員代管平台 (網頁版)", size: "xs", weight: "bold", color: "#9F1239", flex: 8 },
+                { type: "text", text: "免登入", size: "xxs", color: "#F43F5E", align: "end", flex: 3 }
+              ]
+            },
+            {
+              type: "text",
+              text: "• 🏠 子女端遠端代管平台，設定長輩常去安全地點\n• 🔑 邀請碼即時綁定與守護紀錄回溯",
+              size: "xxs",
+              color: "#475569",
+              wrap: true
+            }
+          ]
+        }
+      ]
+    },
+    footer: {
+      type: "box",
+      layout: "vertical",
+      spacing: "sm",
+      paddingAll: "lg",
+      contents: [
+        {
+          type: "button",
+          style: "primary",
+          color: "#0284C7",
+          height: "sm",
+          action: {
+            type: "uri",
+            label: "🚦 開啟周邊交通網頁版",
+            uri: trafficUrl
+          }
+        },
+        {
+          type: "button",
+          style: "primary",
+          color: "#0369A1",
+          height: "sm",
+          action: {
+            type: "uri",
+            label: "🦅 開啟路安鷹眼網頁版",
+            uri: eagleUrl
+          }
+        },
+        {
+          type: "button",
+          style: "primary",
+          color: "#4F46E5",
+          height: "sm",
+          action: {
+            type: "uri",
+            label: "🕵️‍♂️ 開啟資料偵探網頁版",
+            uri: detectiveUrl
+          }
+        },
+        {
+          type: "button",
+          style: "primary",
+          color: "#BE123C",
+          height: "sm",
+          action: {
+            type: "uri",
+            label: "💻 開啟銀髮守護代管平台",
+            uri: guardianUrl
+          }
+        }
+      ]
+    }
+  };
+
+  return {
+    type: "flex",
+    altText: "🌐 MOTC 智慧交通網頁版入口大廳 (免登入 LINE，電腦/手機瀏覽器直接開啟)",
     contents,
     quickReply: BOT_QUICK_REPLY
   };
@@ -1640,6 +1901,145 @@ export function createHelpFlexMessage(urls: {
 }
 
 /**
+ * 6B. MOTC 服務與回饋專區統一表單 (/form - 整合「測試開通申請」與「意見回報單號」雙按鈕)
+ */
+export function createUnifiedFormFlexMessage(
+  formUrl: string = "https://docs.google.com/forms/d/e/1FAIpQLSd84pIjXoYOYO8qAodE6mI-aBfPyMuXoabBWHsw_g2Lu_u6Eg/viewform",
+  feedbackFormUrl: string = "https://docs.google.com/forms/d/e/1FAIpQLSeqcp4e4gbc5L8aE5Kc9dtTVo3Q2UxwQdVd8Mh03tC0Iy94yQ/viewform",
+  ticketId: string = "FB-MOTC-SERVICE"
+): OutgoingLineMessage {
+  const contents = {
+    type: "bubble",
+    size: "mega",
+    header: {
+      type: "box",
+      layout: "vertical",
+      backgroundColor: "#D97706",
+      paddingAll: "xl",
+      contents: [
+        {
+          type: "text",
+          text: "📝 MOTC 服務與回報專區",
+          color: "#FEF3C7",
+          size: "xs",
+          weight: "bold"
+        },
+        {
+          type: "text",
+          text: "線上服務與意見回饋表單",
+          color: "#FFFFFF",
+          size: "xl",
+          weight: "bold",
+          margin: "sm"
+        },
+        {
+          type: "text",
+          text: "身分自動帶入 · 專屬工單即時派發 · 快速申辦",
+          color: "#FDE68A",
+          size: "xs",
+          margin: "xs"
+        }
+      ]
+    },
+    body: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "lg",
+      spacing: "md",
+      contents: [
+        {
+          type: "box",
+          layout: "vertical",
+          backgroundColor: "#FFFBEB",
+          cornerRadius: "md",
+          paddingAll: "md",
+          spacing: "xs",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "📝 1. 內部測試資格開通申請", size: "xs", weight: "bold", color: "#92400E", flex: 8 },
+                { type: "text", text: "內部權限", size: "xxs", color: "#B45309", align: "end", flex: 3 }
+              ]
+            },
+            {
+              type: "text",
+              text: "• 專為交通部內部同仁、計畫主持人與專案夥伴打造。\n• 填寫表單登記 LINE 身分，審核通過即可解鎖 24 大系統平台完整主控台權限！",
+              size: "xxs",
+              color: "#78350F",
+              wrap: true
+            }
+          ]
+        },
+        {
+          type: "box",
+          layout: "vertical",
+          backgroundColor: "#FDF2F8",
+          cornerRadius: "md",
+          paddingAll: "md",
+          spacing: "xs",
+          contents: [
+            {
+              type: "box",
+              layout: "horizontal",
+              contents: [
+                { type: "text", text: "💬 2. 意見回饋與問題回報", size: "xs", weight: "bold", color: "#9D174D", flex: 8 },
+                { type: "text", text: "工單追蹤", size: "xxs", color: "#BE185D", align: "end", flex: 3 }
+              ]
+            },
+            {
+              type: "text",
+              text: `• 若在操作 Mini App 遇到數據異常、操作疑問或功能建議，歡迎填寫意見單。\n• 系統已為您自動生成專屬追蹤單號：${ticketId}，送出後專人即刻追蹤！`,
+              size: "xxs",
+              color: "#831843",
+              wrap: true
+            }
+          ]
+        }
+      ]
+    },
+    footer: {
+      type: "box",
+      layout: "vertical",
+      spacing: "sm",
+      paddingAll: "lg",
+      contents: [
+        {
+          type: "button",
+          style: "primary",
+          color: "#D97706",
+          height: "sm",
+          action: {
+            type: "uri",
+            label: "📝 申請內部測試權限",
+            uri: formUrl
+          }
+        },
+        {
+          type: "button",
+          style: "primary",
+          color: "#EC4899",
+          height: "sm",
+          action: {
+            type: "uri",
+            label: "💬 填寫意見回報單",
+            uri: feedbackFormUrl
+          }
+        }
+      ]
+    }
+  };
+
+  return {
+    type: "flex",
+    altText: `📝 MOTC 服務與回報專區 (測試開通申請 ＆ 意見回饋單號 ${ticketId})`,
+    contents,
+    quickReply: BOT_QUICK_REPLY
+  };
+}
+
+/**
  * 6. Google 表單測試申請可愛氣泡 Flex Message (/申請)
  */
 export function createFormFlexMessage(
@@ -2376,3 +2776,41 @@ export function createFeedbackFlexMessage(
     quickReply: BOT_QUICK_REPLY
   };
 }
+
+/**
+ * Feature Flag / Maintenance Fallback Message
+ */
+export function createFeatureMaintenanceFlexMessage(title: string, description: string): OutgoingLineMessage {
+  return {
+    type: "flex",
+    altText: `🛠️ ${title}`,
+    contents: {
+      type: "bubble",
+      size: "kilo",
+      body: {
+        type: "box",
+        layout: "vertical",
+        paddingAll: "18px",
+        spacing: "md",
+        contents: [
+          {
+            type: "text",
+            text: title,
+            weight: "bold",
+            size: "md",
+            color: "#1E293B"
+          },
+          {
+            type: "text",
+            text: description,
+            wrap: true,
+            size: "sm",
+            color: "#64748B"
+          }
+        ]
+      }
+    },
+    quickReply: BOT_QUICK_REPLY
+  };
+}
+

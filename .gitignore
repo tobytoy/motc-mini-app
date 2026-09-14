@@ -220,6 +220,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# Local dev dashboard (reads .env secrets, local-only tool)
+dashboard.py
+worker/flex_templates.json
 
 # TMP files
 TMP/
