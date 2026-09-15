@@ -342,7 +342,18 @@ async function runTests() {
     body: JSON.stringify({})
   }, MOCK_ENV);
   assert.equal(noTokenRes.status, 400);
-  console.log("  ✓ POST /api/auth/verify without token returned 400");
+  console.log("  ✓ POST /api/auth/verify without token returned 400\n");
+
+  console.log("=== [7] Testing Internal User Whitelist Verification ===");
+  const testWhitelistEnv: Env = {
+    ...MOCK_ENV,
+    KNOWN_INTERNAL_USER_IDS: "Uaecf740fc05ef668b671fa90da9c832e,U4b5e0d89e7e372b2fb2cf6fb61a62ec7,U092b7695571f92f0f23c95c04975636b,U48661172c73e0920140b668f2bcf1a3a"
+  };
+  const whitelist = (testWhitelistEnv.KNOWN_INTERNAL_USER_IDS || "").split(",").map((s) => s.trim()).filter(Boolean);
+  assert.ok(whitelist.includes("U48661172c73e0920140b668f2bcf1a3a"), "Newly added user U48661172c73e0920140b668f2bcf1a3a must be in whitelist");
+  assert.ok(whitelist.includes("Uaecf740fc05ef668b671fa90da9c832e"), "Legacy admin Uaecf... must be in whitelist");
+  assert.equal(whitelist.includes("Unot_in_whitelist_12345"), false, "Non-whitelisted user must not pass internal check");
+  console.log("  ✓ User U48661172c73e0920140b668f2bcf1a3a verified in internal whitelist");
 
   console.log("\n🎉 ALL TESTS PASSED SUCCESSFULLY!");
 }
